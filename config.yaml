@@ -29,7 +29,7 @@ periods:
 
   post_covid:
     label: Post-COVID Surge
-    start_year: 2020
+    start_year: 2022
     end_year: 2025
     meetings_to_sample: 10
 
@@ -67,8 +67,8 @@ canonical_causal_pairs:
     effect: "wage"
   - cause: "asset purchase"
     effect: "yield"
-  - cause: "forward guidance"
-    effect: "expectation"
+  - cause: "inflation expectation"
+    effect: "wage"
   - cause: "supply chain"
     effect: "inflation"
   - cause: "labor market"
