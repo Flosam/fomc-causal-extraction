@@ -1,0 +1,25 @@
+[project]
+name = "fomc-causal-extraction"
+version = "0.1.0"
+description = "LLM-based causal triple extraction from FOMC meeting minutes (CPSC 532 Final Project)"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas",
+    "nltk",
+    "google-generativeai",
+    "openai",
+    "python-dotenv",
+    "pyyaml",
+    "matplotlib",
+    "seaborn",
+    "jupyter",
+    "kaggle",
+    "datasets",
+    "tqdm",
+    "scikit-learn",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel",
+]

@@ -1,0 +1,83 @@
+# ─────────────────────────────────────────────
+# FOMC Causal Extraction — Project Configuration
+# (non-secret settings only; secrets go in .env)
+# ─────────────────────────────────────────────
+
+# ── LLM provider ──────────────────────────────
+# Options: "gemini" | "openai"
+model_provider: gemini
+
+# Model names per provider
+models:
+  gemini: gemini-1.5-pro
+  openai: gpt-4o
+
+# ── Economic regimes ──────────────────────────
+periods:
+  great_moderation:
+    label: Great Moderation
+    start_year: 1994
+    end_year: 2007
+    meetings_to_sample: 10
+
+  post_crisis_zlb:
+    label: Post-Crisis ZLB Era
+    start_year: 2008
+    end_year: 2019
+    meetings_to_sample: 10
+
+  post_covid:
+    label: Post-COVID Surge
+    start_year: 2020
+    end_year: 2023
+    meetings_to_sample: 10
+
+# ── Section targeting ─────────────────────────
+target_sections:
+  - "Staff Review of the Economic Situation"
+  - "Participants' Views on Current Conditions and the Economic Outlook"
+  - "Participants Views on Current Conditions"   # alternate header form
+
+# ── Passage segmentation ──────────────────────
+passage:
+  min_sentences: 1   # never discard a passage — even 1 sentence can have a causal triple
+  max_sentences: 5   # group up to 5 sentences together for context
+
+# ── Prompt refinement held-out set ───────────
+held_out_size: 20
+
+# ── Sanity-check canonical causal pairs ──────
+canonical_causal_pairs:
+  - cause: "interest rate increase"
+    effect: "reduced borrowing"
+  - cause: "interest rate increase"
+    effect: "slower inflation"
+  - cause: "oil price increase"
+    effect: "headline inflation"
+  - cause: "dollar appreciation"
+    effect: "import price decline"
+  - cause: "fiscal stimulus"
+    effect: "aggregate demand"
+  - cause: "tighter financial conditions"
+    effect: "investment slowdown"
+  - cause: "unemployment increase"
+    effect: "wage pressure decline"
+  - cause: "quantitative easing"
+    effect: "long-term rate decline"
+  - cause: "forward guidance"
+    effect: "market expectation anchoring"
+  - cause: "supply chain disruption"
+    effect: "goods inflation"
+  - cause: "labor market tightening"
+    effect: "wage growth"
+  - cause: "consumer confidence decline"
+    effect: "spending reduction"
+
+# ── Failure mode labels (for judge) ──────────
+failure_modes:
+  - Hallucination        # cause/effect not present in source
+  - Hedge Failure        # hedging flattened to certainty
+  - Overclaiming         # directional claim stronger than source
+  - Scope Error          # relation mis-scoped (wrong subject/object)
+  - Correlation/Causation # correlation stated as causation
+  - Other
