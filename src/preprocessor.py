@@ -112,6 +112,25 @@ def _extract_sections(document_text: str) -> list[tuple[str, str]]:
 
 # ── Passage segmentation ──────────────────────────────────────────────────────
 
+_MEETING_HEADER = "A meeting of the Federal Open Market Committee was held"
+_TITLE_RE = re.compile(r"Mr\.|Ms\.|Mrs\.|Messrs\.")
+
+
+def _is_preamble_passage(text: str) -> bool:
+    """
+    Return True if a passage is administrative boilerplate rather than
+    economic content.  Two signals:
+      1. Contains the standard meeting-header sentence (opening of all minutes).
+      2. Dense with name/title markers (≥ 3 occurrences of Mr./Ms./Messrs.) —
+         characteristic of the attendee list block.
+    """
+    if _MEETING_HEADER in text:
+        return True
+    if len(_TITLE_RE.findall(text)) >= 3:
+        return True
+    return False
+
+
 def _segment_into_passages(section_text: str) -> list[str]:
     """
     Tokenise section_text into sentences, then group into non-overlapping
@@ -157,7 +176,11 @@ def build_passages(sampled_csv: Path = SAMPLED_CSV) -> pd.DataFrame:
 
         for section_label, section_text in sections:
             passages = _segment_into_passages(section_text)
+            skipped = 0
             for passage_text in passages:
+                if _is_preamble_passage(passage_text):
+                    skipped += 1
+                    continue
                 records.append({
                     "passage_id": f"p{passage_id:05d}",
                     "meeting_date": row["date"].date(),
@@ -167,6 +190,8 @@ def build_passages(sampled_csv: Path = SAMPLED_CSV) -> pd.DataFrame:
                     "text": passage_text,
                 })
                 passage_id += 1
+            if skipped:
+                logger.debug("Dropped %d preamble passage(s) from meeting %s.", skipped, row.get("date"))
 
     result = pd.DataFrame(records)
     output_path = PASSAGES_CSV
