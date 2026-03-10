@@ -114,19 +114,29 @@ def _extract_sections(document_text: str) -> list[tuple[str, str]]:
 
 _MEETING_HEADER = "A meeting of the Federal Open Market Committee was held"
 _TITLE_RE = re.compile(r"Mr\.|Ms\.|Mrs\.|Messrs\.")
+_SECRETARY_RE = re.compile(r"\bSecretary\s*$", re.MULTILINE)
 
 
 def _is_preamble_passage(text: str) -> bool:
     """
     Return True if a passage is administrative boilerplate rather than
-    economic content.  Two signals:
+    economic content.  Signals checked:
       1. Contains the standard meeting-header sentence (opening of all minutes).
       2. Dense with name/title markers (≥ 3 occurrences of Mr./Ms./Messrs.) —
          characteristic of the attendee list block.
+      3. Ends with "Secretary" on its own line — closing signature block.
+      4. Contains "The meeting adjourned" — adjournment notice.
+      5. Contains "Votes against:" — voting record.
     """
     if _MEETING_HEADER in text:
         return True
     if len(_TITLE_RE.findall(text)) >= 3:
+        return True
+    if _SECRETARY_RE.search(text):
+        return True
+    if "The meeting adjourned" in text:
+        return True
+    if "Votes against:" in text:
         return True
     return False
 
