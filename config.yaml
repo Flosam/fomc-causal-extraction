@@ -43,6 +43,7 @@ target_sections:
 passage:
   min_sentences: 1   # never discard a passage — even 1 sentence can have a causal triple
   max_sentences: 5   # group up to 5 sentences together for context
+  balance_passages: false  # if true, subsample each period to min(period_counts) before extraction
 
 # ── Prompt refinement held-out set ───────────
 held_out_size: 20

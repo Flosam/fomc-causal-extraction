@@ -149,6 +149,17 @@ def main():
 
     passages_df = pd.read_csv(PASSAGES_CSV)
 
+    # Optional passage balancing: subsample each period to min(period_counts)
+    if CONFIG.get("passage", {}).get("balance_passages", False):
+        min_count = passages_df.groupby("period")["passage_id"].count().min()
+        passages_df = (
+            passages_df
+            .groupby("period", group_keys=False)
+            .apply(lambda g: g.sample(n=min_count, random_state=42))
+            .reset_index(drop=True)
+        )
+        logger.info("Balanced passages to %d per period (%d total).", min_count, len(passages_df))
+
     if args.held_out_only:
         passages_df = get_held_out(passages_df)
         logger.info("Running on held-out set (%d passages).", len(passages_df))
