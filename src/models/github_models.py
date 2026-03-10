@@ -1,11 +1,18 @@
-"""Gemini adapter using the google-genai SDK (replaces deprecated google-generativeai)."""
+"""
+GitHub Models adapter.
+
+Uses the OpenAI-compatible inference endpoint provided by GitHub Models
+(https://models.inference.ai.azure.com).  Requires a GitHub personal access
+token (classic or fine-grained) stored as GITHUB_TOKEN in .env.
+
+Free-tier limits apply (rate limits per minute/day vary by model).
+"""
 
 import json
 import time
 import logging
 
-from google import genai
-from google.genai import types
+from openai import OpenAI
 
 from src.config import get_api_key, CONFIG
 from src.models.base import LLMModel, CausalTriple, JudgmentResult, ExtractionError
@@ -13,44 +20,63 @@ from src.prompts import format_extraction, format_complexity_judge, format_faith
 
 logger = logging.getLogger(__name__)
 
+_GITHUB_MODELS_ENDPOINT = "https://models.inference.ai.azure.com"
 _MAX_RETRIES = 3
-_BACKOFF_BASE = 2.0  # seconds
+_BACKOFF_BASE = 2.0
 
 
-class GeminiModel(LLMModel):
+class GitHubModelsModel(LLMModel):
+    """LLM adapter that calls GitHub Models via the OpenAI-compatible API."""
+
     def __init__(self, model_name: str | None = None):
-        api_key = get_api_key("gemini")
-        self._client = genai.Client(api_key=api_key)
-        self.model_name = model_name or CONFIG["models"]["gemini"]
+        token = get_api_key("github")  # reads GITHUB_TOKEN from .env
+        self._client = OpenAI(
+            base_url=_GITHUB_MODELS_ENDPOINT,
+            api_key=token,
+        )
+        self.model_name = model_name or CONFIG["models"].get("github", "gpt-4o-mini")
 
     # ── internal helpers ─────────────────────────────────────────────────────
 
     def _call(self, system_prompt: str, user_prompt: str) -> str:
-        """Call the Gemini API with retry / exponential backoff. Returns raw text."""
+        """Call GitHub Models with retry / exponential backoff. Returns raw text."""
         for attempt in range(1, _MAX_RETRIES + 1):
             try:
-                response = self._client.models.generate_content(
+                response = self._client.chat.completions.create(
                     model=self.model_name,
-                    contents=user_prompt,
-                    config=types.GenerateContentConfig(
-                        system_instruction=system_prompt,
-                        temperature=0.0,
-                        response_mime_type="application/json",
-                    ),
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user",   "content": user_prompt},
+                    ],
+                    temperature=0.0,
+                    response_format={"type": "json_object"},
                 )
-                return response.text
+                raw = response.choices[0].message.content or ""
+                # GitHub Models wraps JSON in an object; unwrap if needed
+                parsed = json.loads(raw)
+                if isinstance(parsed, dict) and "triples" in parsed:
+                    return json.dumps(parsed["triples"])
+                return raw
             except Exception as exc:
-                logger.warning("Gemini attempt %d/%d failed: %s", attempt, _MAX_RETRIES, exc)
+                logger.warning(
+                    "GitHub Models attempt %d/%d failed: %s", attempt, _MAX_RETRIES, exc
+                )
                 if attempt < _MAX_RETRIES:
                     time.sleep(_BACKOFF_BASE ** attempt)
-        raise ExtractionError(f"Gemini failed after {_MAX_RETRIES} attempts.")
+        raise ExtractionError(f"GitHub Models failed after {_MAX_RETRIES} attempts.")
 
     @staticmethod
     def _parse_json(raw: str) -> dict | list:
         try:
             return json.loads(raw)
         except json.JSONDecodeError:
-            cleaned = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+            cleaned = (
+                raw.strip()
+                .removeprefix("```json")
+                .removeprefix("```")
+                .removesuffix("```")
+                .strip()
+            )
             return json.loads(cleaned)
 
     # ── public interface ─────────────────────────────────────────────────────
@@ -62,17 +88,17 @@ class GeminiModel(LLMModel):
             data = self._parse_json(raw)
             if not isinstance(data, list):
                 data = [data]
-            triples = []
-            for item in data:
-                triples.append(CausalTriple(
+            return [
+                CausalTriple(
                     cause=item.get("cause", ""),
                     connector=item.get("connector", ""),
                     effect=item.get("effect", ""),
                     hedge=item.get("hedge", ""),
                     direction=item.get("direction", "ambiguous"),
                     raw_response=raw,
-                ))
-            return triples
+                )
+                for item in data
+            ]
         except Exception as exc:
             logger.error("Failed to parse extraction response: %s\nRaw: %s", exc, raw)
             return []

@@ -9,8 +9,9 @@ model_provider: gemini
 
 # Model names per provider
 models:
-  gemini: gemini-1.5-pro
+  gemini: gemini-2.0-flash
   openai: gpt-4o
+  github: gpt-4o-mini
 
 # ── Economic regimes ──────────────────────────
 periods:
@@ -47,31 +48,33 @@ passage:
 held_out_size: 20
 
 # ── Sanity-check canonical causal pairs ──────
+# Keywords are short fragments that actually appear in FOMC text.
+# Both cause and effect must co-occur in the same passage to count.
 canonical_causal_pairs:
-  - cause: "interest rate increase"
-    effect: "reduced borrowing"
-  - cause: "interest rate increase"
-    effect: "slower inflation"
-  - cause: "oil price increase"
-    effect: "headline inflation"
-  - cause: "dollar appreciation"
-    effect: "import price decline"
-  - cause: "fiscal stimulus"
-    effect: "aggregate demand"
-  - cause: "tighter financial conditions"
-    effect: "investment slowdown"
-  - cause: "unemployment increase"
-    effect: "wage pressure decline"
-  - cause: "quantitative easing"
-    effect: "long-term rate decline"
+  - cause: "interest rate"
+    effect: "borrowing"
+  - cause: "interest rate"
+    effect: "inflation"
+  - cause: "oil price"
+    effect: "inflation"
+  - cause: "dollar"
+    effect: "import"
+  - cause: "fiscal"
+    effect: "demand"
+  - cause: "financial conditions"
+    effect: "investment"
+  - cause: "unemployment"
+    effect: "wage"
+  - cause: "asset purchase"
+    effect: "yield"
   - cause: "forward guidance"
-    effect: "market expectation anchoring"
-  - cause: "supply chain disruption"
-    effect: "goods inflation"
-  - cause: "labor market tightening"
-    effect: "wage growth"
-  - cause: "consumer confidence decline"
-    effect: "spending reduction"
+    effect: "expectation"
+  - cause: "supply chain"
+    effect: "inflation"
+  - cause: "labor market"
+    effect: "wage"
+  - cause: "consumer"
+    effect: "spending"
 
 # ── Failure mode labels (for judge) ──────────
 failure_modes:

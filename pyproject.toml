@@ -6,7 +6,7 @@ requires-python = ">=3.11"
 dependencies = [
     "pandas",
     "nltk",
-    "google-generativeai",
+    "google-genai",
     "openai",
     "python-dotenv",
     "pyyaml",

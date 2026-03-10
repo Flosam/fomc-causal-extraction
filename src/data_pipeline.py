@@ -40,7 +40,7 @@ def download_fomc_dataset():
     logger.info("Downloading FOMC dataset from Kaggle…")
     kaggle.api.authenticate()
     kaggle.api.dataset_download_files(
-        "vladtasca/fomc-meeting-statements-minutes",
+        "vladtasca/fomc-meeting-statements-and-minutes",
         path=str(RAW_DIR),
         unzip=True,
     )

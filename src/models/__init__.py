@@ -2,6 +2,7 @@
 from .base import LLMModel
 from .gemini import GeminiModel
 from .openai_model import OpenAIModel
+from .github_models import GitHubModelsModel
 
 
 def get_model(provider: str | None = None) -> LLMModel:
@@ -18,5 +19,9 @@ def get_model(provider: str | None = None) -> LLMModel:
         return GeminiModel(model_name=model_name)
     elif provider == "openai":
         return OpenAIModel(model_name=model_name)
+    elif provider == "github":
+        return GitHubModelsModel(model_name=model_name)
     else:
-        raise ValueError(f"Unsupported provider: {provider!r}. Choose 'gemini' or 'openai'.")
+        raise ValueError(
+            f"Unsupported provider: {provider!r}. Choose 'gemini', 'openai', or 'github'."
+        )

@@ -21,6 +21,7 @@ def get_api_key(provider: str) -> str:
     key_map = {
         "gemini": "GEMINI_API_KEY",
         "openai": "OPENAI_API_KEY",
+        "github": "GITHUB_TOKEN",
     }
     env_var = key_map.get(provider)
     if env_var is None:

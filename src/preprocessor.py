@@ -43,6 +43,24 @@ def _normalize(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip().lower()
 
 
+def _strip_preamble(text: str) -> str:
+    """
+    Remove the administrative preamble (attendee list, procedural votes) from
+    old-format FOMC minutes that have no section headers.  Finds the first
+    paragraph that is substantive economic prose (long, no attendee-list
+    name/title patterns) and returns everything from there onward.
+    """
+    paragraphs = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
+    preamble_re = re.compile(
+        r"\b(Mr\.|Ms\.|President|Vice\s+President|Chairman|Vice\s+Chairman"
+        r"|unanimous\s+vote|were\s+approved|Secretary|General\s+Counsel)\b"
+    )
+    for i, para in enumerate(paragraphs):
+        if len(para) > 200 and not preamble_re.search(para[:300]) and para[0].isupper():
+            return "\n\n".join(paragraphs[i:])
+    return text  # fallback: return everything
+
+
 def _extract_sections(document_text: str) -> list[tuple[str, str]]:
     """
     Return list of (section_label, section_text) for each target section found.
@@ -131,7 +149,11 @@ def build_passages(sampled_csv: Path = SAMPLED_CSV) -> pd.DataFrame:
 
         sections = _extract_sections(doc_text)
         if not sections:
-            logger.warning("No target sections found in meeting %s.", row.get("date"))
+            logger.warning(
+                "No target sections found in meeting %s — falling back to full text.",
+                row.get("date"),
+            )
+            sections = [("full_document", _strip_preamble(doc_text))]
 
         for section_label, section_text in sections:
             passages = _segment_into_passages(section_text)
