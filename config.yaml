@@ -5,7 +5,7 @@
 
 # ── LLM provider ──────────────────────────────
 # Options: "gemini" | "openai"
-model_provider: gemini
+model_provider: github
 
 # Model names per provider
 models:
@@ -23,14 +23,14 @@ periods:
 
   post_crisis_zlb:
     label: Post-Crisis ZLB Era
-    start_year: 2008
+    start_year: 2010
     end_year: 2019
     meetings_to_sample: 10
 
   post_covid:
     label: Post-COVID Surge
     start_year: 2020
-    end_year: 2023
+    end_year: 2025
     meetings_to_sample: 10
 
 # ── Section targeting ─────────────────────────
