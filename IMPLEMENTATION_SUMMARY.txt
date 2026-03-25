@@ -1,0 +1,58 @@
+IMPLEMENTATION COMPLETE - Passage Limit Feature
+================================================
+
+✅ All 7 todos completed successfully!
+
+CHANGES MADE:
+-------------
+
+1. config.yaml
+   - Added: max_passages_per_period: 100 under passage: section
+   - Setting to null disables the limit (backward compatible)
+
+2. src/extractor.py
+   - Added: sample_passages_by_period() function (lines 57-87)
+     * Randomly samples up to N passages per economic period
+     * Handles edge case: if period has fewer passages, uses all
+     * Uses random_state=42 for reproducibility
+   
+   - Modified: main() function (lines ~545-548)
+     * Checks config for max_passages_per_period
+     * Applies sampling after loading passages.csv, before held-out/balance logic
+     * Logs sampling activity
+
+3. Test Files Created:
+   - test_sampling.py: Unit tests for sample_passages_by_period()
+   - test_comprehensive.py: End-to-end integration test
+
+TESTS PASSED:
+-------------
+✅ Unit tests: Normal sampling, edge cases, reproducibility
+✅ Integration: Sampling works correctly in extraction pipeline  
+✅ Backward compatibility: null value processes all passages
+✅ Comprehensive: Full workflow with 100 passages per period
+
+RESULTS:
+--------
+Original passages: 734 total
+  - great_moderation: 286 passages
+  - post_crisis_zlb: 238 passages  
+  - post_covid: 210 passages
+
+With max_passages_per_period: 100
+Sampled passages: 300 total (59% reduction)
+  - great_moderation: 100 passages
+  - post_crisis_zlb: 100 passages
+  - post_covid: 100 passages
+
+USAGE:
+------
+To run extraction with the 100-passage limit:
+  uv run python -m src.extractor --resume
+
+To disable the limit:
+  Edit config.yaml: set max_passages_per_period: null
+
+To use a different limit:
+  Edit config.yaml: set max_passages_per_period: <number>
+
