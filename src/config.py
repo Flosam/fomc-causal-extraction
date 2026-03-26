@@ -16,6 +16,20 @@ def load_config() -> dict:
         return yaml.safe_load(f)
 
 
+def reset_config() -> dict:
+    """Reload config.yaml from disk and update the global CONFIG dict.
+    
+    Useful in notebooks when you edit config.yaml and want to reload
+    without restarting the kernel.
+    
+    Returns:
+        The newly loaded config dict
+    """
+    global CONFIG
+    CONFIG = load_config()
+    return CONFIG
+
+
 def get_api_key(provider: str) -> str:
     """Return the API key for the given provider, raising clearly if missing."""
     key_map = {

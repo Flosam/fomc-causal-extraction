@@ -65,8 +65,8 @@ def build_annotation_csv() -> pd.DataFrame:
         "triple_id", "passage_id", "meeting_date", "period", "section",
         "passage_text",
         "cause", "connector", "effect", "hedge", "direction",
-        "llm_complexity_score", "llm_complexity_rationale",
-        "llm_faithful", "llm_faithful_rationale", "llm_failure_mode",
+        "llm_complexity_score",
+        "llm_faithful", "llm_failure_mode",
         "human_complexity_score", "human_faithful",
         "extraction_error", "raw_response",
     ]

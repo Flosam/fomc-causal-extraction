@@ -10,8 +10,27 @@ model_provider: gemini
 # Model names per provider
 models:
   gemini: gemini-3-flash-preview
-  openai: gpt-4o
-  github: gpt-4o
+  openai: gpt-4o-mini
+  github: gpt-4o-mini
+
+# Max thinking tokens (reasoning budget for extended thinking models)
+# Controls how many internal reasoning tokens models like o1/o3 can use
+# Set to null to use API defaults (recommended for extraction)
+max_thinking_tokens: null
+
+# Max output tokens for regular (non-thinking) models
+# Set to null to use API defaults (recommended to avoid truncation)
+max_output_tokens: null
+
+# ── Batch API settings ────────────────────────
+# Configuration for Gemini Batch API (asynchronous processing)
+batch_api:
+  # Initial wait time (seconds) before first status poll
+  poll_initial_delay: 60
+  # Maximum time (seconds) between status polls
+  poll_max_interval: 600
+  # Exponential backoff multiplier for poll intervals
+  poll_backoff_factor: 1.5
 
 # ── Economic regimes ──────────────────────────
 periods:
@@ -44,10 +63,10 @@ passage:
   min_sentences: 1   # never discard a passage — even 1 sentence can have a causal triple
   max_sentences: 10   # group up to 10 sentences together for context
   balance_passages: false  # if true, subsample each period to min(period_counts) before extraction
-  max_passages_per_period: 100  # limit passages per period during extraction (null = no limit)
+  max_passages_per_period:  # limit passages per period during extraction (null = no limit)
 
 # ── Prompt refinement held-out set ───────────
-held_out_size: 10
+held_out_size: 20
 
 # ── Sanity-check canonical causal pairs ──────
 # Keywords are short fragments that actually appear in FOMC text.

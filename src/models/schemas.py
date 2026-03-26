@@ -75,12 +75,6 @@ class ComplexityJudgmentSchema(BaseModel):
         le=5,
         description="Linguistic complexity score from 1 to 5, where 1 = simple explicit causality, 5 = dense hedged implicit causality"
     )
-    
-    complexity_rationale: str = Field(
-        ...,
-        description="One sentence explaining why this complexity score was assigned",
-        min_length=10
-    )
 
 
 class FaithfulnessJudgmentSchema(BaseModel):
@@ -89,12 +83,6 @@ class FaithfulnessJudgmentSchema(BaseModel):
     faithful: Literal[0, 1] = Field(
         ...,
         description="1 if the extracted triple faithfully represents the source passage, 0 if unfaithful"
-    )
-    
-    faithful_rationale: str = Field(
-        ...,
-        description="One sentence explaining the faithfulness judgment",
-        min_length=10
     )
     
     failure_mode: Literal[

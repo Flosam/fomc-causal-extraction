@@ -4,62 +4,75 @@
 # Extraction prompt
 # ─────────────────────────────────────────────────────────────────────────────
 
-EXTRACTION_SYSTEM = (
-    "You are an expert NLP annotator specialising in causal relation extraction "
-    "from financial and macroeconomic text."
-)
+EXTRACTION_SYSTEM = """\
+You are a highly precise NLP annotator specializing in extracting causal relationships from financial and macroeconomic text, such as FOMC minutes.
+Assume outputs will be used for economic research.
 
-EXTRACTION_USER = """\
-Extract ALL causal relationships from the passage below.
+A relationship is causal ONLY if changing the cause would change the effect (counterfactual interpretation).
+Exclude correlational or interpretive statements (e.g. suggests, indicates, consistent with).
+
+---
+
+Fields:
+
+- cause: factor producing the effect (minimal complete phrase)
+- effect: outcome affected (minimal complete phrase)
+- connector: core causal verb/mechanism only
+- hedge: uncertainty modifying the connector; "none" if absent
+- direction:
+    - "positive": cause and effect move in same direction
+    - "negative": cause and effect move in opposite directions
+    - "ambiguous": unclear
+
+- strength:
+    - "strong": explicit causal verb, little/no hedging
+    - "moderate": softer or hedged causal language
+    - "weak": heavily hedged (rare)
+
+- type (based on cause):
+    - "monetary_policy": central bank actions (rate hikes, QT, guidance)
+    - "real_economy": output, demand, employment, consumption, investment
+    - "inflation": prices, wages, inflation expectations, cost pressures
+    - "financial_conditions": credit conditions, interest rates, spreads, asset prices
+    - "external": global factors, exchange rates, commodity prices
+
+---
 
 Rules:
-- Include only genuine causal relationships, NOT mere correlations or co-occurrences.
-- Preserve hedging language exactly as written (e.g. "appeared to", "was expected to").
-- Do NOT infer causality that is not stated or strongly implied in the text.
-- A single passage may contain zero, one, or multiple causal relationships.
 
-For each causal relationship return a JSON object with exactly these fields:
-  "cause"     : the cause phrase (string)
-  "connector" : the verbatim causal connective word/phrase (e.g. "led to", "boosted")
-  "effect"    : the effect phrase (string)
-  "hedge"     : any hedging language modifying the relationship, or "" if none
-  "direction" : one of "positive", "negative", or "ambiguous"
+1. Include only clearly causal relationships (counterfactual test).
+2. Do not infer beyond the text.
+3. Separate connector (verb) from hedge (uncertainty phrase).
+4. Preserve hedging exactly.
+5. Keep phrases minimal but economically meaningful.
+6. Keep compound causes/effects together.
+"""
+  
+EXTRACTION_USER = """\
+Extract causal relationships from the passage.
 
-Return a JSON array of these objects (empty array [] if no causal relationships found).
-Return ONLY the JSON array, no commentary.
+Output ONLY the JSON structure with the triples array.
+No explanations, no rationale, no extra text or fields.
+
+---
+
+Example:
+
+"Rising oil prices boosted inflation. The Fed's rate hikes, which were expected to slow demand, contributed to a cooling labor market."
+
+[
+  {{"cause": "rising oil prices", "connector": "boosted", "effect": "inflation", "hedge": "none", "direction": "positive", "strength": "strong", "type": "inflation"}},
+  {{"cause": "Fed rate hikes", "connector": "slow", "effect": "demand", "hedge": "were expected to", "direction": "negative", "strength": "moderate", "type": "monetary_policy"}},
+  {{"cause": "Fed rate hikes", "connector": "contributed to", "effect": "cooling labor market", "hedge": "none", "direction": "negative", "strength": "moderate", "type": "monetary_policy"}}
+]
+
+---
 
 Passage:
 {passage}
 """
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Judge prompt — complexity scoring
-# ─────────────────────────────────────────────────────────────────────────────
 
-COMPLEXITY_JUDGE_SYSTEM = (
-    "You are an expert NLP annotator rating the linguistic complexity of "
-    "passages from Federal Reserve meeting minutes."
-)
-
-COMPLEXITY_JUDGE_USER = """\
-Rate the complexity of the following passage on a scale of 1 to 5.
-
-Complexity criteria:
-  1 – Explicit, simple causality; plain language; no hedging.
-  2 – Mostly explicit causality; minimal hedging or domain jargon.
-  3 – Mix of explicit and implicit causality; moderate hedging or jargon.
-  4 – Predominantly implicit causality; heavy hedging; significant domain vocabulary.
-  5 – Highly implicit causality; pervasive hedging; dense domain vocabulary; ambiguous direction.
-
-Return a JSON object with exactly these fields:
-  "complexity_score"     : integer 1–5
-  "complexity_rationale" : one sentence explaining the score
-
-Return ONLY the JSON object, no commentary.
-
-Passage:
-{passage}
-"""
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Judge prompt — faithfulness scoring

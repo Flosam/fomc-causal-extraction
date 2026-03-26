@@ -6,6 +6,17 @@ from typing import Optional
 
 
 @dataclass
+class TokenUsage:
+    """Token usage information from an API call."""
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    
+    @property
+    def total_tokens(self) -> int:
+        return self.prompt_tokens + self.completion_tokens
+
+
+@dataclass
 class CausalTriple:
     """One extracted causal relationship."""
     cause: str
@@ -13,16 +24,18 @@ class CausalTriple:
     effect: str
     hedge: str              # hedging language, or empty string
     direction: str          # "positive" | "negative" | "ambiguous"
+    strength: str = ""      # "strong" | "moderate" | "weak"
+    type: str = ""          # "monetary_policy" | "real_economy" | "inflation" | "financial_conditions" | "external" | "other"
     raw_response: str = ""  # full JSON string returned by the model
+    prompt_tokens: int = 0  # input tokens used for this extraction
+    completion_tokens: int = 0  # output tokens generated for this extraction
 
 
 @dataclass
 class JudgmentResult:
     """LLM-as-judge output for a single triple."""
     complexity_score: int           # 1–5
-    complexity_rationale: str
     faithful: int                   # 1 = faithful, 0 = unfaithful
-    faithful_rationale: str
     failure_mode: str = ""          # non-empty when faithful == 0
 
 
