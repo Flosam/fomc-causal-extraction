@@ -12,6 +12,20 @@ This project evaluates how reliably a large language model can extract **causal 
 - Complexity effect: faithfulness drops from **79.5% (simple)** to **48.8% (most complex)**
 - Across-regime stability: **65.8%–67.9%** (Great Moderation, Post-Crisis ZLB, Post-COVID)
 
+## Key Result Visuals
+
+### Faithfulness drops as linguistic complexity increases
+![Faithfulness by Complexity](outputs/figures/fig_faithfulness_by_complexity.png)
+
+### Faithfulness is stable across economic periods
+![Faithfulness by Period](outputs/figures/fig_faithfulness_by_period.png)
+
+### Failure modes by complexity
+![Failure Modes by Complexity](outputs/figures/fig_human_failure_modes_by_complexity.png)
+
+### Example causal knowledge graph (Post-COVID)
+![Knowledge Graph Post-COVID](outputs/figures/kg_post_covid.png)
+
 ## Why This Matters
 
 For applied AI in economics and finance, extraction quality is the difference between usable automation and misleading analysis.  
