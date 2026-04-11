@@ -12,9 +12,14 @@ Usage:
 """
 
 import argparse
+import csv
+import json
 import logging
+import re
 import time
+from dataclasses import dataclass, asdict
 from datetime import datetime
+from typing import Optional
 
 import pandas as pd
 from tqdm import tqdm
@@ -29,7 +34,58 @@ logger = logging.getLogger(__name__)
 PASSAGES_CSV = ROOT / "outputs" / "passages.csv"
 EXTRACTIONS_CSV = ROOT / "outputs" / "extractions.csv"
 HELD_OUT_CSV = ROOT / "outputs" / "held_out_passages.csv"
+FAILED_PASSAGES_CSV = ROOT / "outputs" / "failed_passages.csv"
 HELD_OUT_SIZE: int = CONFIG.get("held_out_size", 20)
+
+
+# ── Recovery utilities ────────────────────────────────────────────────────────
+
+def recover_partial_json(raw_json: str) -> list[dict]:
+    """
+    Extract causal triple data from truncated JSON responses.
+    
+    Extracts whatever fields are present using regex, including incomplete triples.
+    Returns triples with empty strings for missing fields.
+    
+    Args:
+        raw_json: Truncated JSON string from LLM response
+    
+    Returns:
+        List of recovered triple dictionaries (with whatever fields were found)
+    """
+    recovered_triples = []
+    
+    # Find all triple-like objects - look for blocks with curly braces
+    # that contain at least one field
+    triple_blocks = re.findall(r'\{[^{}]*?"(?:cause|connector|effect|hedge|direction)"[^{}]*?\}', raw_json, re.DOTALL)
+    
+    for block in triple_blocks:
+        # Extract each field individually - use empty string if not found
+        cause_match = re.search(r'"cause"\s*:\s*"([^"]*)"', block)
+        connector_match = re.search(r'"connector"\s*:\s*"([^"]*)"', block)
+        effect_match = re.search(r'"effect"\s*:\s*"([^"]*)"', block)
+        hedge_match = re.search(r'"hedge"\s*:\s*"([^"]*)"', block)
+        direction_match = re.search(r'"direction"\s*:\s*"(positive|negative|ambiguous)"', block)
+        
+        # Build triple with whatever we found (empty string for missing)
+        triple = {
+            "cause": cause_match.group(1) if cause_match else "",
+            "connector": connector_match.group(1) if connector_match else "",
+            "effect": effect_match.group(1) if effect_match else "",
+            "hedge": hedge_match.group(1) if hedge_match else "",
+            "direction": direction_match.group(1) if direction_match else "",
+        }
+        
+        # Include if we found at least one field
+        if any(triple.values()):
+            recovered_triples.append(triple)
+    
+    if recovered_triples:
+        logger.info("RECOVERY: Extracted %d partial triples from truncated JSON", len(recovered_triples))
+    else:
+        logger.warning("RECOVERY: No recoverable data found in truncated JSON")
+    
+    return recovered_triples
 
 
 # ── Held-out set management ───────────────────────────────────────────────────
@@ -47,7 +103,7 @@ def get_held_out(passages_df: pd.DataFrame, random_state: int = 42) -> pd.DataFr
 
     sample_df = passages_df[passages_df['period'] != 'great_moderation']
     sample = sample_df.sample(n=min(HELD_OUT_SIZE, len(sample_df)), random_state=random_state)
-    sample.to_csv(HELD_OUT_CSV, index=False)
+    sample.to_csv(HELD_OUT_CSV, index=False, quoting=csv.QUOTE_NONNUMERIC)
     logger.info("Held-out set (%d passages) saved to %s", len(sample), HELD_OUT_CSV)
     return sample
 
@@ -137,10 +193,8 @@ def run_extraction(
                 "effect": "",
                 "hedge": "",
                 "direction": "",
-                "strength": "",
-                "type": "",
                 "raw_response": "",
-                "extraction_error": "no_triples",
+                "extraction_error": "",  # Empty result is not an error
             })
         else:
             for i, triple in enumerate(triples):
@@ -155,8 +209,6 @@ def run_extraction(
                     "effect": triple.effect,
                     "hedge": triple.hedge,
                     "direction": triple.direction,
-                    "strength": triple.strength,
-                    "type": triple.type,
                     "raw_response": triple.raw_response,
                     "extraction_error": "",
                 })
@@ -167,14 +219,14 @@ def run_extraction(
             all_records = existing_records + new_records
             result = pd.DataFrame(all_records)
             EXTRACTIONS_CSV.parent.mkdir(parents=True, exist_ok=True)
-            result.to_csv(EXTRACTIONS_CSV, index=False)
+            result.to_csv(EXTRACTIONS_CSV, index=False, quoting=csv.QUOTE_NONNUMERIC)
             logger.debug("Saved progress: %d passages processed", idx)
 
     # Final save
     all_records = existing_records + new_records
     result = pd.DataFrame(all_records)
     EXTRACTIONS_CSV.parent.mkdir(parents=True, exist_ok=True)
-    result.to_csv(EXTRACTIONS_CSV, index=False)
+    result.to_csv(EXTRACTIONS_CSV, index=False, quoting=csv.QUOTE_NONNUMERIC)
     logger.info(
         "Wrote %d triples (%d passages) to %s",
         triple_counter, len(todo), EXTRACTIONS_CSV,
@@ -221,33 +273,103 @@ def run_extraction_batch_api(
     
     # Check for existing in-progress batch jobs
     pending_jobs = state_manager.get_pending(job_type="extraction")
+    completed_jobs = state_manager.get_completed(job_type="extraction")
     
-    # If --poll flag is used, ONLY poll existing jobs (don't create new ones)
+    # If --poll flag is used, check for both pending AND completed jobs
     if poll:
-        if not pending_jobs:
-            print("\n⚠️  No in-progress extraction batch jobs found.")
+        if not pending_jobs and not completed_jobs:
+            print("\n⚠️  No in-progress or completed extraction batch jobs found.")
             print("   Run without --poll to start a new extraction batch.")
             return pd.DataFrame()
         
-        # Poll the first pending job
-        print(f"\n🔄 Resuming polling for existing batch job:")
-        print(f"  - {pending_jobs[0].display_name} ({pending_jobs[0].job_name})")
-        print(f"    State: {pending_jobs[0].state}, Created: {pending_jobs[0].created_at}")
-        return poll_and_retrieve_batch(pending_jobs[0], model, state_manager)
-    
-    # If creating a new batch, warn about existing jobs
-    if pending_jobs:
-        print(f"\n⚠️  Found {len(pending_jobs)} in-progress extraction batch job(s):")
-        for job in pending_jobs:
+        # If there are completed jobs, retrieve them
+        if completed_jobs:
+            job = completed_jobs[0]
+            print(f"\n✅ Found completed batch job:")
             print(f"  - {job.display_name} ({job.job_name})")
             print(f"    State: {job.state}, Created: {job.created_at}")
+            print(f"\n📥 Retrieving results...")
+            
+            # Load passages data for merging
+            if not PASSAGES_CSV.exists():
+                print(f"⚠️  Warning: {PASSAGES_CSV} not found. Extraction will be missing metadata.")
+                passages_df = pd.DataFrame()
+            else:
+                passages_df = pd.read_csv(PASSAGES_CSV)
+            
+            # Load existing extractions (if any)
+            existing_records = []
+            if EXTRACTIONS_CSV.exists():
+                existing_df = pd.read_csv(EXTRACTIONS_CSV)
+                existing_records = existing_df.to_dict('records')
+                print(f"   Found {len(existing_records)} existing extraction records")
+            
+            # Get batch job and retrieve results
+            batch_job = model.get_batch_status(job.job_name)
+            inlined_responses = model.retrieve_batch_results(batch_job)
+            print(f"✅ Retrieved {len(inlined_responses)} responses")
+            
+            # Parse results
+            print(f"\n🔍 Parsing extraction results...")
+            new_records = parse_batch_extraction_results(inlined_responses, model.model_name)
+            
+            # Merge with passage metadata
+            if not passages_df.empty:
+                print(f"🔗 Merging with passage metadata...")
+                new_records = merge_extraction_with_passages(new_records, passages_df)
+            
+            # Combine and save
+            all_records = existing_records + new_records
+            result_df = pd.DataFrame(all_records)
+            result_df.to_csv(EXTRACTIONS_CSV, index=False, quoting=csv.QUOTE_NONNUMERIC)
+            
+            # Save failed passage IDs for re-extraction
+            save_failed_passages(all_records)
+            
+            print(f"\n✅ Extraction complete!")
+            print(f"   Total triples: {len(new_records)}")
+            print(f"   Output: {EXTRACTIONS_CSV}")
+            
+            # Delete the completed job from state
+            state_manager.delete(job.job_name)
+            print(f"\n🗑️  Removed completed job from batch state")
+            
+            return result_df
         
-        response = input("\nContinue polling existing batch? [Y/n]: ").strip().lower()
-        if response in ('', 'y', 'yes'):
-            # Poll the first pending job
+        # Otherwise poll pending jobs
+        if pending_jobs:
+            print(f"\n🔄 Resuming polling for existing batch job:")
+            print(f"  - {pending_jobs[0].display_name} ({pending_jobs[0].job_name})")
+            print(f"    State: {pending_jobs[0].state}, Created: {pending_jobs[0].created_at}")
             return poll_and_retrieve_batch(pending_jobs[0], model, state_manager)
-        else:
-            print("Skipping existing batch. Starting new extraction...")
+    
+    # If creating a new batch, warn about existing jobs
+    if pending_jobs or completed_jobs:
+        if pending_jobs:
+            print(f"\n⚠️  Found {len(pending_jobs)} in-progress extraction batch job(s):")
+            for job in pending_jobs:
+                print(f"  - {job.display_name} ({job.job_name})")
+                print(f"    State: {job.state}, Created: {job.created_at}")
+        
+        if completed_jobs:
+            print(f"\n⚠️  Found {len(completed_jobs)} completed extraction batch job(s) ready to retrieve:")
+            for job in completed_jobs:
+                print(f"  - {job.display_name} ({job.job_name})")
+                print(f"    State: {job.state}, Created: {job.created_at}")
+        
+        if pending_jobs:
+            response = input("\nContinue polling existing batch? [Y/n]: ").strip().lower()
+            if response in ('', 'y', 'yes'):
+                # Poll the first pending job
+                return poll_and_retrieve_batch(pending_jobs[0], model, state_manager)
+            else:
+                print("Skipping existing batch. Starting new extraction...")
+        elif completed_jobs:
+            print("\n💡 Tip: Run with --poll to automatically retrieve completed batch results")
+            response = input("Skip completed batches and start new extraction? [y/N]: ").strip().lower()
+            if response not in ('y', 'yes'):
+                print("Please run with --poll to retrieve completed batches first.")
+                return pd.DataFrame()
     
     # Load existing results if skipping already-extracted passages
     existing_ids: set[str] = set()
@@ -268,18 +390,32 @@ def run_extraction_batch_api(
     # Build batch requests
     print(f"\n📦 Building batch requests for {len(todo)} passages...")
     requests = []
+    seen_passage_ids = set()
     for _, row in tqdm(todo.iterrows(), total=len(todo), desc="Building requests"):
         passage_id = str(row["passage_id"])
         passage_text = str(row["text"])
         
+        # Detect duplicate passage IDs in request building
+        if passage_id in seen_passage_ids:
+            logger.warning("DUPLICATE passage_id detected in batch building: %s", passage_id)
+            continue
+        seen_passage_ids.add(passage_id)
+        
         request = model.build_extraction_request(passage_text, passage_id)
         requests.append(request)
+    
+    # Verify no duplicates
+    if len(requests) != len(seen_passage_ids):
+        raise ValueError(f"Request count mismatch: {len(requests)} requests but {len(seen_passage_ids)} unique IDs")
     
     # Submit batch job
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     display_name = f"extraction_{len(todo)}_passages_{timestamp}"
     
     print(f"\n🚀 Submitting batch job: {display_name}")
+    print(f"   Requests to submit: {len(requests)}")
+    print(f"   Unique passage IDs: {len(seen_passage_ids)}")
+    
     batch_job = model.submit_batch(requests, display_name=display_name)
     
     # Save batch state
@@ -346,7 +482,17 @@ def poll_and_retrieve_batch(
                 current_interval = min(current_interval * backoff_factor, max_interval)
             
             # Poll status
-            batch_job = model.get_batch_status(job_state.job_name)
+            try:
+                batch_job = model.get_batch_status(job_state.job_name)
+            except Exception as exc:
+                # Check if it's an authentication error
+                error_str = str(exc).lower()
+                if 'authentication' in error_str or 'permission' in error_str or '403' in error_str:
+                    print(f"\n❌ Authentication Error")
+                    print(f"   {exc}")
+                else:
+                    print(f"\n❌ Error polling batch status: {exc}")
+                raise
             
             # Update state
             job_state.state = str(batch_job.state)
@@ -394,14 +540,25 @@ def poll_and_retrieve_batch(
     print(f"\n🔍 Parsing extraction results...")
     new_records = parse_batch_extraction_results(inlined_responses, model.model_name)
     
+    # Merge with passage metadata
+    if PASSAGES_CSV.exists():
+        print(f"🔗 Merging with passage metadata...")
+        passages_df = pd.read_csv(PASSAGES_CSV)
+        new_records = merge_extraction_with_passages(new_records, passages_df)
+    else:
+        logger.warning("Passages CSV not found. Extraction will be missing metadata.")
+    
     # Combine with existing records
     all_records = existing_records + new_records
     result_df = pd.DataFrame(all_records)
     
     # Save to CSV
-    result_df.to_csv(EXTRACTIONS_CSV, index=False)
-    logger.info("Wrote %d triples (%d passages) to %s", 
+    result_df.to_csv(EXTRACTIONS_CSV, index=False, quoting=csv.QUOTE_NONNUMERIC)
+    logger.info("Wrote %d triples (%d passages) to %s",
                len(new_records), len(inlined_responses), EXTRACTIONS_CSV)
+    
+    # Save failed passage IDs for re-extraction
+    save_failed_passages(all_records)
     
     print(f"\n✅ Extraction complete!")
     print(f"   Total triples: {len(all_records)}")
@@ -409,6 +566,7 @@ def poll_and_retrieve_batch(
     print(f"   Output: {EXTRACTIONS_CSV}")
     
     return result_df
+
 
 
 def parse_batch_extraction_results(
@@ -427,6 +585,7 @@ def parse_batch_extraction_results(
     """
     from src.models.schemas import ExtractionResponseSchema
     from pydantic import ValidationError
+    import json
     
     records = []
     
@@ -435,7 +594,7 @@ def parse_batch_extraction_results(
         metadata = response_obj.metadata or {}
         passage_id = metadata.get("passage_id", "unknown")
         
-        # Handle errors
+        # Handle batch API errors
         if response_obj.error:
             logger.error("Batch request failed for passage %s: %s", 
                         passage_id, response_obj.error)
@@ -450,17 +609,16 @@ def parse_batch_extraction_results(
                 "effect": "",
                 "hedge": "",
                 "direction": "",
-                "strength": "",
-                "type": "",
                 "raw_response": str(response_obj.error),
                 "extraction_error": f"batch_error: {response_obj.error}",
                 "prompt_tokens": 0,
                 "completion_tokens": 0,
                 "model": model_name,
+                "malformed_count": 0,
             })
             continue
         
-        # Parse response
+        # Handle empty responses
         response = response_obj.response
         if not response or not response.text:
             logger.warning("Empty response for passage %s", passage_id)
@@ -475,13 +633,12 @@ def parse_batch_extraction_results(
                 "effect": "",
                 "hedge": "",
                 "direction": "",
-                "strength": "",
-                "type": "",
                 "raw_response": "",
                 "extraction_error": "empty_response",
                 "prompt_tokens": 0,
                 "completion_tokens": 0,
                 "model": model_name,
+                "malformed_count": 0,
             })
             continue
         
@@ -492,14 +649,14 @@ def parse_batch_extraction_results(
             prompt_tokens = getattr(response.usage_metadata, 'prompt_token_count', 0)
             completion_tokens = getattr(response.usage_metadata, 'candidates_token_count', 0)
         
-        # Validate and parse JSON
+        # Try to parse and validate response
         try:
             extraction_response = ExtractionResponseSchema.model_validate_json(response.text)
             
+            # Handle empty triples (normal outcome)
             if not extraction_response.triples:
-                # No triples found
                 records.append({
-                    "triple_id": f"{passage_id}_no_triples",
+                    "triple_id": f"{passage_id}_empty",
                     "passage_id": passage_id,
                     "meeting_date": None,
                     "period": None,
@@ -509,60 +666,84 @@ def parse_batch_extraction_results(
                     "effect": "",
                     "hedge": "",
                     "direction": "",
-                    "strength": "",
-                    "type": "",
                     "raw_response": response.text,
-                    "extraction_error": "no_triples",
+                    "extraction_error": "",
                     "prompt_tokens": prompt_tokens,
                     "completion_tokens": completion_tokens,
                     "model": model_name,
+                    "malformed_count": 0,
                 })
             else:
-                # Add each triple as a record
+                # Create record for each triple
                 for idx, triple_schema in enumerate(extraction_response.triples):
                     records.append({
                         "triple_id": f"{passage_id}_{idx}",
                         "passage_id": passage_id,
-                        "meeting_date": None,  # Will be filled by merge
-                        "period": None,  # Will be filled by merge
-                        "text": None,  # Will be filled by merge
+                        "meeting_date": None,  # Filled by merge
+                        "period": None,  # Filled by merge
+                        "text": None,  # Filled by merge
                         "cause": triple_schema.cause,
                         "connector": triple_schema.connector,
                         "effect": triple_schema.effect,
                         "hedge": triple_schema.hedge,
                         "direction": triple_schema.direction,
-                        "strength": triple_schema.strength,
-                        "type": triple_schema.type,
                         "raw_response": response.text,
                         "extraction_error": "",
-                        "prompt_tokens": prompt_tokens if idx == 0 else 0,  # Only count once
+                        "prompt_tokens": prompt_tokens if idx == 0 else 0,  # Count once
                         "completion_tokens": completion_tokens if idx == 0 else 0,
                         "model": model_name,
+                        "malformed_count": 0,
                     })
         
         except ValidationError as exc:
+            # Validation failed - attempt recovery from truncated JSON
             logger.error("Validation failed for passage %s: %s", passage_id, exc)
-            records.append({
-                "triple_id": f"{passage_id}_validation_error",
-                "passage_id": passage_id,
-                "meeting_date": None,
-                "period": None,
-                "text": None,
-                "cause": "",
-                "connector": "",
-                "effect": "",
-                "hedge": "",
-                "direction": "",
-                "strength": "",
-                "type": "",
-                "raw_response": response.text,
-                "extraction_error": f"validation_error: {str(exc)[:200]}",
-                "prompt_tokens": prompt_tokens,
-                "completion_tokens": completion_tokens,
-                "model": model_name,
-            })
+            
+            # Try to recover partial data
+            recovered_triples = recover_partial_json(response.text)
+            
+            if recovered_triples:
+                # Create records for recovered triples
+                for idx, triple in enumerate(recovered_triples):
+                    records.append({
+                        "triple_id": f"{passage_id}_recovered_{idx}",
+                        "passage_id": passage_id,
+                        "meeting_date": None,
+                        "period": None,
+                        "text": None,
+                        "cause": triple["cause"],
+                        "connector": triple["connector"],
+                        "effect": triple["effect"],
+                        "hedge": triple["hedge"],
+                        "direction": triple["direction"],
+                        "raw_response": response.text,
+                        "extraction_error": f"recovered: {str(exc)[:150]}",
+                        "prompt_tokens": prompt_tokens if idx == 0 else 0,
+                        "completion_tokens": completion_tokens if idx == 0 else 0,
+                        "model": model_name,
+                    })
+            else:
+                # No recovery possible - create error record
+                records.append({
+                    "triple_id": f"{passage_id}_validation_error",
+                    "passage_id": passage_id,
+                    "meeting_date": None,
+                    "period": None,
+                    "text": None,
+                    "cause": "",
+                    "connector": "",
+                    "effect": "",
+                    "hedge": "",
+                    "direction": "",
+                    "raw_response": response.text,
+                    "extraction_error": f"validation_error: {str(exc)[:200]}",
+                    "prompt_tokens": prompt_tokens,
+                    "completion_tokens": completion_tokens,
+                    "model": model_name,
+                })
         
         except Exception as exc:
+            # JSON parsing or other error
             logger.error("Parse error for passage %s: %s", passage_id, exc)
             records.append({
                 "triple_id": f"{passage_id}_parse_error",
@@ -575,16 +756,57 @@ def parse_batch_extraction_results(
                 "effect": "",
                 "hedge": "",
                 "direction": "",
-                "strength": "",
-                "type": "",
                 "raw_response": response.text,
                 "extraction_error": f"parse_error: {str(exc)[:200]}",
                 "prompt_tokens": prompt_tokens,
                 "completion_tokens": completion_tokens,
                 "model": model_name,
+                "malformed_count": 0,
             })
     
     return records
+
+
+
+
+def merge_extraction_with_passages(
+    extraction_records: list[dict],
+    passages_df: pd.DataFrame,
+) -> list[dict]:
+    """
+    Merge extraction records with passage metadata (meeting_date, period, text).
+    
+    Args:
+        extraction_records: List of extraction record dicts (with passage_id)
+        passages_df: DataFrame with columns: passage_id, meeting_date, period, text
+    
+    Returns:
+        List of extraction records with merged metadata
+    """
+    # Create a lookup dict for fast access
+    passage_lookup = {}
+    for _, row in passages_df.iterrows():
+        passage_id = str(row["passage_id"])
+        passage_lookup[passage_id] = {
+            "meeting_date": row.get("meeting_date"),
+            "period": row.get("period"),
+            "text": row.get("text"),
+        }
+    
+    # Merge metadata into each record
+    merged_records = []
+    for record in extraction_records:
+        passage_id = str(record.get("passage_id", ""))
+        passage_data = passage_lookup.get(passage_id, {})
+        
+        # Update record with passage metadata
+        record["meeting_date"] = passage_data.get("meeting_date")
+        record["period"] = passage_data.get("period")
+        record["text"] = passage_data.get("text")
+        
+        merged_records.append(record)
+    
+    return merged_records
 
 
 # ── Single-passage extraction for notebook testing ───────────────────────────
@@ -621,7 +843,7 @@ def extract_single_passage(
         - raw_response, extraction_error, extract_time_s
         
         Returns one row per extracted triple. If no triples found, returns
-        one row with empty cause/effect/etc and extraction_error="no_triples".
+        one row with empty cause/effect/etc and extraction_error="" (empty string).
     
     Example:
         >>> from src.prompts import EXTRACTION_USER_OLD
@@ -672,8 +894,6 @@ def extract_single_passage(
                 effect=item.get("effect", ""),
                 hedge=item.get("hedge", ""),
                 direction=item.get("direction", "ambiguous"),
-                strength=item.get("strength", ""),
-                type=item.get("type", ""),
                 raw_response=raw_json,
             ))
         
@@ -708,7 +928,7 @@ def extract_single_passage(
             "hedge": "",
             "direction": "",
             "raw_response": raw_json,
-            "extraction_error": extraction_error or "no_triples",
+            "extraction_error": extraction_error or "",  # Empty result is not an error unless there was an actual error
             "extract_time_s": extract_time,
         })
     else:
@@ -725,8 +945,6 @@ def extract_single_passage(
                 "effect": triple.effect,
                 "hedge": triple.hedge,
                 "direction": triple.direction,
-                "strength": triple.strength,
-                "type": triple.type,
                 "raw_response": triple.raw_response,
                 "extraction_error": extraction_error,
                 "extract_time_s": extract_time,

@@ -90,6 +90,20 @@ class BatchStateManager:
         
         return results
     
+    def get_completed(self, job_type: Optional[str] = None) -> list[BatchJobState]:
+        """Get all completed batch jobs that haven't been processed, optionally filtered by type."""
+        all_states = self.load_all()
+        completed_states = ["JOB_STATE_SUCCEEDED", "JOB_STATE_COMPLETED",
+                           "JobState.JOB_STATE_SUCCEEDED", "JobState.JOB_STATE_COMPLETED"]
+        
+        results = []
+        for state in all_states.values():
+            if state.state in completed_states:
+                if job_type is None or state.job_type == job_type:
+                    results.append(state)
+        
+        return results
+    
     def delete(self, job_name: str):
         """Remove a batch job from state tracking."""
         all_states = self.load_all()

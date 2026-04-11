@@ -11,6 +11,7 @@ Usage:
 """
 
 import argparse
+import csv
 import logging
 import os
 import random
@@ -105,7 +106,7 @@ def filter_and_sample(csv_path: Path = KAGGLE_CSV, seed: int = 42) -> pd.DataFra
 
     result = pd.concat(sampled_frames).sort_values("date").reset_index(drop=True)
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
-    result.to_csv(SAMPLED_CSV, index=False)
+    result.to_csv(SAMPLED_CSV, index=False, quoting=csv.QUOTE_NONNUMERIC)
     logger.info("Saved %d sampled meetings to %s", len(result), SAMPLED_CSV)
     return result
 

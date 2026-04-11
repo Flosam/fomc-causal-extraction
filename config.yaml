@@ -19,8 +19,8 @@ models:
 max_thinking_tokens: null
 
 # Max output tokens for regular (non-thinking) models
-# Set to null to use API defaults (recommended to avoid truncation)
-max_output_tokens: null
+# Set to limit token usage and prevent runaway generation
+max_output_tokens: 10000
 
 # ── Batch API settings ────────────────────────
 # Configuration for Gemini Batch API (asynchronous processing)
@@ -61,9 +61,9 @@ target_sections:
 # ── Passage segmentation ──────────────────────
 passage:
   min_sentences: 1   # never discard a passage — even 1 sentence can have a causal triple
-  max_sentences: 10   # group up to 10 sentences together for context
+  max_sentences: 5   # group up to 5 sentences together (reduced from 10 to prevent truncation)
   balance_passages: false  # if true, subsample each period to min(period_counts) before extraction
-  max_passages_per_period:  # limit passages per period during extraction (null = no limit)
+  max_passages_per_period: 100  # limit passages per period during extraction (null = no limit)
 
 # ── Prompt refinement held-out set ───────────
 held_out_size: 20

@@ -18,23 +18,11 @@ Fields:
 - cause: factor producing the effect (minimal complete phrase)
 - effect: outcome affected (minimal complete phrase)
 - connector: core causal verb/mechanism only
-- hedge: uncertainty modifying the connector; "none" if absent
+- hedge: uncertainty modifying the connector; empty string if absent
 - direction:
     - "positive": cause and effect move in same direction
     - "negative": cause and effect move in opposite directions
     - "ambiguous": unclear
-
-- strength:
-    - "strong": explicit causal verb, little/no hedging
-    - "moderate": softer or hedged causal language
-    - "weak": heavily hedged (rare)
-
-- type (based on cause):
-    - "monetary_policy": central bank actions (rate hikes, QT, guidance)
-    - "real_economy": output, demand, employment, consumption, investment
-    - "inflation": prices, wages, inflation expectations, cost pressures
-    - "financial_conditions": credit conditions, interest rates, spreads, asset prices
-    - "external": global factors, exchange rates, commodity prices
 
 ---
 
@@ -46,27 +34,29 @@ Rules:
 4. Preserve hedging exactly.
 5. Keep phrases minimal but economically meaningful.
 6. Keep compound causes/effects together.
+7. If you do not find any causal relationships, return all fields empty.
 """
   
 EXTRACTION_USER = """\
-Extract causal relationships from the passage.
+Extract causal relationships from the passage. Follow the output schema provided.
 
-Output ONLY the JSON structure with the triples array.
-No explanations, no rationale, no extra text or fields.
+DO NOT return arrays of values - each triple must be a JSON object with named fields.
+Output ONLY valid JSON. No explanations, no rationale, no extra text.
+If there are no causal relationships, return {{"triples": []}}.
 
----
-
-Example:
+Example Input:
 
 "Rising oil prices boosted inflation. The Fed's rate hikes, which were expected to slow demand, contributed to a cooling labor market."
 
-[
-  {{"cause": "rising oil prices", "connector": "boosted", "effect": "inflation", "hedge": "none", "direction": "positive", "strength": "strong", "type": "inflation"}},
-  {{"cause": "Fed rate hikes", "connector": "slow", "effect": "demand", "hedge": "were expected to", "direction": "negative", "strength": "moderate", "type": "monetary_policy"}},
-  {{"cause": "Fed rate hikes", "connector": "contributed to", "effect": "cooling labor market", "hedge": "none", "direction": "negative", "strength": "moderate", "type": "monetary_policy"}}
-]
+Example Output:
 
----
+{{
+  "triples": [
+    {{"cause": "rising oil prices", "connector": "boosted", "effect": "inflation", "hedge": "", "direction": "positive"}},
+    {{"cause": "Fed rate hikes", "connector": "slow", "effect": "demand", "hedge": "were expected to", "direction": "negative"}},
+    {{"cause": "Fed rate hikes", "connector": "contributed to", "effect": "cooling labor market", "hedge": "", "direction": "negative"}}
+  ]
+}}
 
 Passage:
 {passage}

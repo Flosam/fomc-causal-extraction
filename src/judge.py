@@ -12,6 +12,7 @@ Usage:
 """
 
 import argparse
+import csv
 import logging
 import time
 from datetime import datetime
@@ -103,9 +104,9 @@ def run_judge_batch_api(
     # Index passages by passage_id for quick lookup
     passage_lookup = passages_df.set_index("passage_id")["text"].to_dict()
     
-    # Filter out null-extraction rows
-    valid = extractions_df[extractions_df["extraction_error"] != "no_triples"].copy()
-    valid = valid[valid["cause"].astype(str).str.strip() != ""]
+    # Filter out error rows and empty extractions
+    # Keep only rows with non-empty cause field (valid extractions)
+    valid = extractions_df[extractions_df["cause"].astype(str).str.strip() != ""].copy()
     
     # Load existing results if skipping already-judged triples
     existing_ids: set[str] = set()
@@ -139,8 +140,6 @@ def run_judge_batch_api(
             effect=str(row["effect"]),
             hedge=str(row["hedge"]),
             direction=str(row["direction"]),
-            strength=str(row.get("strength", "")),
-            type=str(row.get("type", "")),
         )
         
         # Create combined judgment request (both complexity and faithfulness)
@@ -319,7 +318,7 @@ def poll_and_retrieve_judgment_batch(
     result_df = pd.DataFrame(all_records)
     
     # Save to CSV
-    result_df.to_csv(JUDGE_SCORES_CSV, index=False)
+    result_df.to_csv(JUDGE_SCORES_CSV, index=False, quoting=csv.QUOTE_NONNUMERIC)
     logger.info("Wrote %d judge scores to %s", len(all_records), JUDGE_SCORES_CSV)
     
     print(f"\n✅ Judgment complete!")

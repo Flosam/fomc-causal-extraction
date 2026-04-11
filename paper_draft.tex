@@ -1,0 +1,510 @@
+\documentclass[11pt]{article}
+\usepackage{acl}
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{float}
+
+\aclfinalcopy{}
+
+\title{Evaluating LLM Faithfulness in Causal Extraction from FOMC Minutes: \\
+        A Study Across Linguistic Complexity and Economic Regimes}
+
+\author{Florent Samson}
+
+\date{April 10th, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Large language models (LLMs) have shown promise for information extraction tasks, but their reliability on domain-specific institutional text remains unclear. We systematically evaluate how faithfully LLMs extract causal relationships from Federal Reserve meeting minutes (FOMC), examining how extraction fidelity varies with linguistic complexity and economic period. Using Gemini 3-Flash on 201 passages from 30 FOMC meetings spanning three distinct economic regimes, we extract 577 causal triples and conduct human evaluation. We find an overall faithfulness rate of 66.9\%, with significant degradation as linguistic complexity increases (79.5\% for simple causality vs. 48.8\% for most complex). We identify systematic failure modes including hallucinations (8.0\%), partial extractions (5.2\%), directionality errors (5.2\%), and others. Faithfulness varies minimally across periods (65.8--67.9\%), indicating robustness to vocabulary changes. Our findings highlight the importance of human review and complexity-aware validation when deploying LLM extractors in institutional contexts.
+\end{abstract}
+
+\section{Introduction}
+
+Central bank communications are critical for economic policy transmission, yet extracting structured causal knowledge from their text has historically required manual effort or heavily engineered pipelines. The Federal Open Market Committee (FOMC) publishes detailed meeting minutes that articulate the Committee's reasoning about economic causality: how policy actions affect inflation, employment, financial conditions, and real economic activity.
+
+Large language models have demonstrated surprising capability for structured information extraction across diverse domains. However, a critical question remains underexplored: \textit{How faithfully do LLMs extract causal knowledge from dense, domain-specific institutional prose?} This matters because hallucinations in extraction—plausible-sounding but unsupported causal claims—could mislead economic researchers or support policymakers' decisions with false premises. Furthermore, manual knowledge base creation is tedious and expensive. Proper knowledge of LLMs' capabilities will help automate the process.
+
+We address three specific research questions:
+\begin{enumerate}
+    \item How reliably do LLMs extract causal triples (cause, effect, connector) from FOMC minutes, and what is the overall fidelity loss compared to human interpretation?
+    \item Do extraction failures vary systematically with linguistic complexity, with performance degrading on implicit or hedged causality?
+    \item Does faithfulness vary across different economic regimes (Great Moderation, Post-Crisis ZLB, Post-COVID), suggesting vocabulary or conceptual drift?
+\end{enumerate}
+
+We evaluate Google's Gemini 3-Flash on 201 passages from 30 FOMC meetings stratified across three economic periods (1994--2023), extracting 577 causal triples. A human domain expert annotated each triple for complexity (1--5 scale) and faithfulness (binary), enabling ground-truth evaluation. Our key findings:
+
+\begin{itemize}
+    \item \textbf{Overall faithfulness is modest:} 66.9\% of all triples and 73.1\% of extracted triples are faithful, leaving one-third systematically incorrect.
+    \item \textbf{Complexity-dependent degradation:} Faithfulness drops from 79.5\% (simple causality) to 48.8\% (most complex), indicating the model struggles with hedged or implicit causal relationships.
+    \item \textbf{Failure modes are interpretable:} Common errors include hallucinations (invented relationships), partial extractions, and directionality reversals, all amenable to post-processing fixes.
+    \item \textbf{Robust across periods:} Faithfulness is consistent across economic regimes (65.8--67.9\%), indicating the model generalizes despite vocabulary shifts.
+\end{itemize}
+
+Our contribution is a systematic evaluation of LLM extraction fidelity in a high-stakes domain, revealing both the capabilities and failure modes that practitioners must account for. We argue that LLM-based extraction of domain knowledge is viable but requires human review and uncertainty calibration.
+
+\section{Related Work}
+
+\subsection{Information Extraction and Relation Extraction}
+
+Causal relation extraction has a long history in NLP. Early work relied on pattern matching and linguistic rules (Bethard et al., 2008). Semantic role labeling (Palmer et al., 2010) advances the task by mapping surface syntax to abstract semantic roles, including causality. However, these methods require hand-engineered features and struggle with domain-specific vocabulary.
+
+More recent neural approaches, including OpenIE \cite{banko2007open} and sequence-to-sequence models \cite{cui2020survey}, have improved extraction coverage and precision. Yet these methods are typically trained on newswire or general text, raising questions about out-of-domain transfer to institutional discourse like FOMC minutes.
+
+\subsection{LLM-Based Information Extraction}
+
+Recent work has explored few-shot prompting for structured extraction with LLMs. Wei et al. \cite{wei2022chain} show that in-context examples improve extraction accuracy, and Ye et al. \cite{ye2023towards} demonstrate that chain-of-thought reasoning can enhance relation extraction. However, most studies measure extraction by comparing against existing gold-standard datasets, which may not reflect real institutional text where causal relationships are often implicit or hedged.
+
+A growing body of work examines LLM hallucinations in generation tasks \cite{ji2023survey}. Todd et al. \cite{todd2023counting} specifically investigate hallucination in retrieval-augmented generation. However, hallucination in \textit{extraction} tasks—where the input text is provided—is less studied. Our work explicitly characterizes extraction hallucinations as a distinct failure mode.
+
+\subsection{Causal Knowledge Bases and Knowledge Graph Construction}
+
+Knowledge bases encoding causal relationships have emerged as a critical resource in NLP. ATOMIC \cite{sap2019atomic} introduced a commonsense knowledge graph with 877K inferential knowledge tuples representing social and physical commonsense reasoning. Building on this, ATOMIC20K \cite{hwang2021comet} and subsequent work have explored how to curate, validate, and leverage causal knowledge at scale. These efforts typically face similar challenges to our work: distinguishing between plausible-sounding causal claims and ground-truth knowledge, and characterizing when models reliably extract causal structure versus hallucinate relationships. 
+
+More recent work on knowledge graph completion with LLMs \cite{zhang2023knowledge, deng2024large} highlights the trade-off between coverage and fidelity—larger knowledge graphs constructed via LLMs cover more phenomena but with lower precision. Event extraction work \cite{newman2022event, miltiadous2024event} similarly confronts the problem of extracting structured causal and temporal relationships from text while managing hallucination rates. Our work contributes a domain-specific case study of these extraction challenges in institutional finance, where fidelity directly impacts downstream policy analysis.
+
+\subsection{Financial and Economic NLP}
+
+Limited prior work applies LLMs to FOMC analysis. Traditional approaches use keyword search or manual annotation \cite{hansen2016policy} to extract monetary policy stance. Gentzkow et al. \cite{gentzkow2019measuring} build policy uncertainty indices from newspaper articles. The Romer and Romer \cite{romer2004monetary} instrument exemplifies how carefully constructed causal narratives from policy documents can serve as validated measures of monetary policy shocks, demonstrating the potential but also the fragility of extracting causal structure from official communications.
+
+More recent work applies NLP to central bank communications. Hansen and McMahon \cite{hansen2016policy} quantify policy surprises from FOMC statements using semantic similarity. While systematic studies of forward guidance language and hawkish language in Fed communications have explored these topics, our work differs in explicitly evaluating the faithfulness of extracted causal structure rather than focusing solely on sentiment or policy stance. We focus on faithful causal extraction from a single specialized source (FOMC minutes) rather than broad policy signals, enabling detailed complexity-dependent analysis.
+
+\subsection{Evaluation of Extraction Reliability}
+
+Human evaluation remains the gold standard for information extraction \cite{ung2022evaluating}. Our approach follows established IE evaluation practice: domain expert annotation of complexity and faithfulness, enabling detailed error analysis.
+
+\section{Data and Method}
+
+\subsection{Data Collection and Stratification}
+
+We source FOMC meeting minutes from the Federal Reserve's public archive (covering 1994--2023) via Kaggle. We stratify 30 meetings across three distinct economic periods:
+
+\begin{itemize}
+    \item \textbf{Great Moderation (1994--2007):} 10 meetings. Characterized by stable, conventional monetary policy language and focus on inflation targeting.
+    \item \textbf{Post-Crisis ZLB (2010--2019):} 10 meetings. Marked by quantitative easing, forward guidance, and zero lower bound constraints. Introduces new vocabulary (QE, SOMA, FOMC dot projections).
+    \item \textbf{Post-COVID Surge (2022--2026):} 10 meetings. Dominated by supply chain disruptions, pandemic-driven language, and rapid rate increases. Introduces inflation-focused causality and labor market disruption narratives.
+\end{itemize}
+
+From each meeting, we extract the \textit{Staff Review of the Economic Conditions}, \textit{Participant's View on Current Conditions}, and \textit{Policy Decision and Rationale} sections, then segment into passages of maximum 5 sentences using NLTK's Punkt tokenizer. We then use stratified sampling to select 201 passages for feasibility in the final analysis dataset.
+
+
+\subsection{Extraction Pipeline and Prompt Design}
+
+Our extraction pipeline consists of three stages:
+
+\begin{enumerate}
+    \item \textbf{Preprocessing:} Extract FOMC decision sections, segment into passages.
+    \item \textbf{LLM Extraction:} Submit each passage to Gemini 3-Flash with a few-shots prompt requesting causal triples in JSON format.
+    \item \textbf{Validation:} Parse JSON responses, validate against schema, log errors.
+\end{enumerate}
+
+The extraction prompt (shown in Appendix A) requests causal triples with five structured fields:
+
+\begin{itemize}
+    \item \textbf{Cause:} The entity or event triggering the causal relationship (e.g., ``rate cuts'', ``inflation expectations'').
+    \item \textbf{Effect:} The entity or outcome resulting from the cause (e.g., ``increased demand'', ``wage growth'').
+    \item \textbf{Connector:} The linking language explicitly or implicitly relating cause to effect (e.g., ``leads to'', ``results in'', ``contributes to'', ``dampens''). Captures the nature of the causal mechanism.
+    \item \textbf{Hedge:} Uncertainty markers or qualifiers qualifying the causal claim (e.g., ``may'', ``could'', ``suggests'', ``potentially'', or ``none'' for unqualified claims). Essential for distinguishing confident from tentative assertions.
+    \item \textbf{Direction:} Polarity of the causal effect: \texttt{positive} (cause increases effect), \texttt{negative} (cause decreases effect), or \texttt{ambiguous} (unclear or bidirectional relationship).
+\end{itemize}
+
+The \texttt{hedge} field is particularly important for our analysis, as it distinguishes explicit confidence levels in the extracted claims. The \texttt{direction} allow recovery of effect polarity, critical for constructing knowledge graphs.
+
+We used the Batch API for cost savings, extracting 577 total causal triples.
+
+\subsection{Human Evaluation}
+
+A domain expert (master-level economics student with central banking experience) manually reviewed all extracted triples and scored:
+\begin{itemize}
+    \item \textbf{Complexity (1--5):} How implicit or hedged is the causal claim in the original text? Scored using the following levels:
+    \begin{enumerate}
+        \item \textbf{Level 1-2 (Simple):} Explicit, direct causal statements with no or minimal hedging. Example: ``Rate cuts stimulate demand.''
+        \item \textbf{Level 3 (Moderate):} Moderate hedging or mild implicit structure. Example: ``Supply disruptions have persisted. Inflation remains elevated.'' 
+        \item \textbf{Level 4-5 (Complex):} Heavy hedging, multi-hop chains, or highly implicit causation requiring domain knowledge. Example: ``Forward guidance shapes expectations, which moderate price pressures through wage behavior.''
+
+    \end{enumerate}
+    \item \textbf{Faithfulness (binary):} Is the extracted triple accurate and supported by the passage?
+\end{itemize}
+
+Faithfulness is strict: a triple is marked unfaithful if it misrepresents causality, reverses direction, introduces unsupported claims, or partially extracts a multi-part relationship. Annotator agreement is not applicable (single annotator), but the human's domain expertise ensures gold-standard labeling.
+
+The unfaithful triples were categorized into one of six failure modes determined by the human expert:
+\begin{itemize}
+    \item \textbf{Missing Triple:} Causal relationship present in the passage but not extracted by the LLM.
+    \item \textbf{Hallucination/Correlation:} Extracts a non-existing causal relationship or misinterpret correlation as causation.
+    \item \textbf{Wrong Direction:} Doesn't identify the correct direction of the causal relationship.
+    \item \textbf{Wrong Cause/Effect/Connector:} Correctly identifies a causal relationship but extracts one of the fields erroneously.
+    \item \textbf{Hedge Failure:} Doesn't identify an existing hedge, identifies a non-existent hedge, or extracts the wrong hedging words.
+    \item \textbf{LLM Technical Error:} Technical error from the LLM response.
+\end{itemize}
+
+\section{Results and Analysis}
+
+\subsection{Overall Extraction Performance}
+
+Across 201 passages, the human expert identified 577 valid causal triples. Of these, \textbf{386 (66.9\%) were extracted and judged faithful} and \textbf{191 (33.1\%) were unfaithful}. Five passages experienced JSON parsing errors (2.5\%).
+
+This 66.9\% faithfulness rate is non-trivial but concerning. For comparison, human inter-annotator agreement on relation extraction tasks typically exceeds 85\%--90\%. The LLM's extraction fidelity lags this benchmark, suggesting significant information loss or hallucination. Excluding the missing triples and technical errors, the model achieves a faithfulness rate of 73.1\%, which is a 6.2\% improvement but still below human standards. Focusing only on the Cause/Connector/Effect fields, we achieve 82.2\% faithfulness. This is closer to human standards but still significantly below what would human annotator rate.
+
+\subsection{Faithfulness by Linguistic Complexity}
+
+Figure~\ref{fig:complexity} shows a complexity-dependent degradation:
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.95\linewidth]{outputs/figures/fig_faithfulness_by_complexity.png}
+\caption{Faithfulness decreases dramatically with linguistic complexity, from 79.5\% (simple) to 48.8\% (complex), suggesting LLMs struggle with implicit or hedged causality.}
+\label{fig:complexity}
+\end{figure}
+
+Key patterns include:
+\begin{itemize}
+    \item \textbf{Complexity 1:} 105/132 faithful (79.5\%)
+    \item \textbf{Complexity 2:} 117/169 faithful (69.2\%)
+    \item \textbf{Complexity 3:} 106/160 faithful (66.2\%)
+    \item \textbf{Complexity 4:} 37/73 faithful (50.7\%)
+    \item \textbf{Complexity 5:} 21/43 faithful (48.8\%)
+\end{itemize}
+
+The difference between simple (79.5\%) and complex (48.8\%) is stark: a 30 percentage point drop. This suggests the model excels at extracting explicit causal claims but struggles when causality is implicit, conditional, or embedded in economic reasoning.
+
+\subsection{Faithfulness by Economic Period}
+
+Period-specific faithfulness (see Figure~\ref{fig:period}):
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.95\linewidth]{outputs/figures/fig_faithfulness_by_period.png}
+\caption{Faithfulness is remarkably consistent across economic periods (65.8--67.9\%), suggesting period-specific vocabulary does not significantly impair extraction despite shifts from conventional policy to QE and supply-chain-focused language.}
+\label{fig:period}
+\end{figure}
+
+Period-specific results:
+\begin{itemize}
+    \item \textbf{Great Moderation:} 106/156 faithful (67.9\%)
+    \item \textbf{Post-Crisis ZLB:} 134/199 faithful (67.3\%)
+    \item \textbf{Post-COVID Surge:} 146/222 faithful (65.8\%)
+\end{itemize}
+
+Faithfulness is remarkably consistent across periods (65.8--67.9\%), differing by only 2 percentage points. Despite introduction of new vocabulary (QE, SOMA, supply chain language) and evolution of the theory putting more importance on managing expectations, the model maintains extraction accuracy. This suggests period-specific economic vocabulary does not significantly impair extraction.
+
+The distribution of failure modes does not vary significantly by period (see Figure~\ref{fig:failures_period}). This reveals that, just as overall faithfulness is stable, the \textit{types} of errors the model makes are also stable across economic regimes. 
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.95\linewidth]{outputs/figures/fig_failure_modes_by_period.png}
+\caption{Failure modes by economic period, expressed as \% of all triplets.}
+\label{fig:failures_period}
+\end{figure}
+
+\vspace{6pt}
+
+\subsection{Failure Mode Analysis}
+
+Unfaithful triples fall into interpretable categories (see Figure~\ref{fig:failures}):
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.95\linewidth]{outputs/figures/fig_human_failure_modes_by_complexity.png}
+\caption{Distribution of failure modes by complexity, expressed as a share of all triplets. Each failure mode's bar height reflects its actual prevalence in the data.}
+\label{fig:failures}
+\end{figure}
+
+The visualization shows that failure modes contribute non-uniformly to overall unfaithfulness across complexity levels. High-complexity passages show higher proportions of missed triplets and erroneous cause/effect/connector, while low-complexity passages experience more hallucinations. This distribution suggests different mitigation strategies may be needed for different complexity regimes.
+The 191 unfaithful triplets distribute across six distinct failure modes, each with different implications for practitioners:
+\begin{itemize}
+    \item \textbf{Mode 0 (Missed Triples):} 34 instances (5.9\% of all triples). 
+    \item \textbf{Mode 1 (Hallucinations):} 46 instances (8.0\%). 
+    \item \textbf{Mode 2 (Wrong Direction):} 30 instances (5.2\%). 
+    \item \textbf{Mode 3 (Wrong Cause/Effect/Connector):} 48 instances (8.3\%).
+    \item \textbf{Mode 4 (Hedge Failure):} 18 instances (3.1\%). 
+    \item \textbf{Mode 5 (Technical Errors):} 15 instances (2.6\%). 
+\end{itemize}
+
+These modes merit different treatment depending on the downstream application.
+
+\subsection{Hedge Detection and Its Relationship with Faithfulness}
+
+Hedging is a notable linguistic feature in our data. Of the 577 triples, 251 (43.5\%) are correctly identified as having no hedge, 259 (44.8\%) are identified as having a hedge, and 67 (11.6\%) are technical errors, missing triples, or triples that have been identified as having a hedge but with a hedge error and are therefore not counted in the subsequent analysis. 
+
+To investigate the relationship between hedging and faithfulness, we examined the complete dataset and analyzed differences in complexity:
+
+Among hedged triples (containing any marker text): 192/259 faithful (74.1\%)
+Among non-hedged triples: 183/251 faithful (77.3\%)
+
+Contrary to initial expectations, hedged and non-hedged extractions show **similar faithfulness rates**. This suggests that hedging is not the predominant factor in causing errors, but rather that it is strongly correlated with complexity which has been shown to increase the failure rate.
+
+We conducted a detailed comparison of hedged vs. non-hedged extractions (see Figure~\ref{fig:hedge_faith}), examining how they differ in complexity and failure modes.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.7\linewidth]{outputs/figures/fig_hedged_vs_nonhedged_faithfulness.png}
+\caption{Hedged vs. non-hedged extraction faithfulness.}
+\label{fig:hedge_faith}
+\end{figure}
+
+**Critically, hedged and non-hedged triples differ substantially in complexity.** Hedged triples average 2.90 in complexity, while non-hedged triples average 1.96. This 0.94-point difference is important: hedge triples are classified as being more complex by design, which complicates the clear assessment of the role of hedging in faithfulness.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.7\linewidth]{outputs/figures/fig_hedged_vs_nonhedged_complexity.png}
+\caption{Mean complexity score by hedge status. Hedged extractions average higher complexity (2.90 vs 1.96).}
+\label{fig:hedge_complex}
+\end{figure}
+
+The failure-mode distribution between hedged and non-hedged extractions shows the same pattern. Hedged triples do not exhibit clearly different proportions of failure modes (omitting hedge failures), which reinforce the fact that hedging does not have a significant impact on the model's extraction ability.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.85\linewidth]{outputs/figures/fig_hedged_vs_nonhedged_failure_modes.png}
+\caption{Failure mode distribution by hedge status (as \% of all triplets in each group).}
+\label{fig:hedge_fail}
+\end{figure}
+
+This finding suggests practitioners should consider hedging as an indicator of the model's perception of relationship complexity, not as a simple reliability signal for triaging extraction results.
+
+\subsection{Sensitivity Analysis}
+
+Our evaluation framework reveals important nuances when considering different interpretations of extraction success and failure.
+To assess the robustness of our findings, we examine how key results change under alternative evaluation frames:
+
+\textbf{Perspective 1: Existing Triplets Only.} If we focus only on triples the model actually extracted (excluding missed detections, Mode 0, and technical errors, Mode 5), we have 528 triplets with 386 faithful (73.1\% faithfulness). Importantly, the complexity degradation pattern persists: faithfulness declines from ~78\% (simple) to ~57\% (complex). This suggests that given something is extracted, the model's complexity and confidence signals remain reliable predictors of accuracy three quarter of the time.
+
+\textbf{Perspective 2: Core Triplets with Relaxed Criteria.} If we treat Mode 2 (wrong direction) and Mode 4 (hedge failure) as partial successes rather than outright failures, and exclude missed triples (Mode 0) and technical errors (Mode 5), we work with 528 triplets and classify 434 as successful (82.2\%). The complexity degradation pattern softens slightly but remains substantial (~82\% simple to ~67\% complex), and hedge correlation persists. This perspective captures the intuition that a reversed relationship or missed hedge is a ``close miss'' rather than hallucination or detection failure. The success rate is now close to human annotators' rate, meaning that with little improvements, LLMs can be used to extract simple causal triples.
+
+\textbf{Summary.} Across all three evaluation frames, the core findings hold:
+\begin{itemize}
+    \item Complexity remains a strong predictor of faithfulness (degradation of 15--25 percentage points from simple to complex).
+    \item Failure modes show the same pattern of increased erroneous cause/effect/connector as complexity increases.
+    \item Period robustness persists (faithfulness stable across economic regimes).
+\end{itemize}
+
+The absolute faithfulness rate varies (66.9\% $\to$ 73.1\% $\to$ 82.2\%), but the pattern of which factors drive accuracy does not. This suggests our conclusions about LLM extraction reliability are robust to different interpretations of what constitutes success.
+
+\subsection{Knowledge Graph Insights}
+
+We constructed knowledge graphs from the extracted triples, identifying top causal relationships per period (full results in Appendix C). The graphs reveal period-specific causal narratives:
+
+\begin{itemize}
+    \item \textbf{Great Moderation:} Dominated by inflation-unemployment-interest-rate triangles, with stable policy transmission.
+    \item \textbf{Post-Crisis ZLB:} Introduces asset purchases, financial conditions, and wealth effects as central nodes.
+    \item \textbf{Post-COVID:} Supply chain and labor market disruptions become central, with tighter fiscal-monetary coordination.
+\end{itemize}
+
+Graph statistics (Appendix C, Table \ref{tab:kg_stats}) show 11--14 nodes and 26--31 edges per period, indicating moderate semantic complexity and domain specialization.
+
+\section{Lessons Learned and Self-Evaluation}
+
+\subsection{What Went Well}
+
+\begin{itemize}
+    \item \textbf{Pipeline reliability:} The extraction and evaluation pipeline executed successfully across 201 passages, with 5 passages (2.5\%) returning technical errors , all handled gracefully.
+    \item \textbf{Complexity stratification:} Post-hoc complexity scoring revealed clear degradation patterns, validating the hypothesis that LLM performance is complexity-dependent.
+    \item \textbf{Failure mode classification:} Most failures fell clearly into one of the 6 failure mode categories, leading to a clearer and simplified categorization which provided relevant insight as to how to improve the process
+\end{itemize}
+
+\subsection{Lessons Learned}
+\begin{itemize}
+    \item \textbf{Human annotation is tedious:} Annotating all 577 triples took a significant amount of time. Breaking it into multiple sessions makes it easier and prevents the annotator from going too fast. Scrambling the triples before annotating was also useful to prevent fatigue biasing the results.
+    \item \textbf{LLM APIs can be unpredictable:} We encountered occasional parsing errors and response variability. Implementing robust error handling and logging was essential.
+\end{itemize}
+
+\subsection{Proposal Adherence}
+
+Our project largely followed the original proposal:
+\begin{itemize}
+    \item ✓ Extracted causal triples from FOMC minutes
+    \item ✓ Stratified evaluation across linguistic complexity (simple → complex)
+    \item ✓ Examined period effects (Great Moderation, Post-Crisis, Post-COVID)
+    \item ✓ Conducted human evaluation for ground truth
+    \item ✓ Analyzed extraction fidelity and failure modes
+\end{itemize}
+
+We did not classify using LLM-as-judge (optional in the proposal), to keep costs and prompt \& pipeline engineering to a reasonable amount.
+
+\subsection{Challenges and Limitations}
+
+\begin{enumerate}
+    \item \textbf{Failure prevalence:} Our model was only faithful 2/3 of the time, which is below what we require for a fully automated analysis of causal language in FOMC minutes.
+    
+    \item \textbf{Single annotator:} While our annotator is a domain expert, single-annotator evaluation lacks inter-rater reliability metrics. The boundary between causation and correlation can be thin, leading to possibly different results from different annotators.
+
+    \item \textbf{Time consumption}: Manually annotating hundreds of passages took significant time, leading to fatigue that might increase the rate of human errors. 
+    
+    \item \textbf{Small sample per period:} 10 meetings per period limits generalization. A larger sample (e.g., 20+ meetings per period) would reduce variance.
+    
+    \item \textbf{Passage length bias:} Longer passages had higher error rates (discussed in Appendix B), but cutting passages shorter caused more causal statements to be cut in half and thus undetected.
+    
+    \item \textbf{Negative Causality:} Model struggle with sentences such as “Despite high unemployment, consumer spending increased.”
+
+    \item \textbf{Statistical vs Economical:} Difficulty distinguishing economic causation and statistical causation
+
+    \item \textbf{Output variability:} LLMs are not deterministic, leading to possibly different results to the same prompts and passages.
+\end{enumerate}
+
+\subsection{Future Work}
+
+\begin{itemize}
+    \item \textbf{Deterministic complexity evaluation:} Implement a linguistic complexity measure instead of relying on human judgment.
+    \item \textbf{LLM-as-a-judge:} Compare human jugement to LLM-as-a-judge, and maybe use that second LLM to improve results.
+    \item \textbf{RAG to implementation:} Test whether adding a small sample of human-annotated triples and passages in a RAG would help improve faithfulness.
+    \item \textbf{Real-time adaptation:} Implement online learning to adjust extraction as Fed vocabulary evolves.
+    \item \textbf{Downstream task validation:} Test whether extracted causal triples improve economic forecasting or policy analysis downstream.
+\end{itemize}
+
+\section{Conclusions}
+
+This study systematically evaluates LLM faithfulness in extracting causal knowledge from Federal Reserve meeting minutes. We find that while LLMs can extract structured causality at scale, fidelity is modest (66.9\%) and complexity-dependent (degrading from 79.5\% to 48.8\% as linguistic complexity increases). 
+
+The key insights are: (1) \textbf{Failure correlates with complexity}, where the faithfulness rate decreases significantly as complexity increases.; (2) \textbf{Common failure modes are interpretable and addressable}; (3) \textbf{Robustness across economic periods suggests vocabulary isn't the bottleneck}—rather, \textit{linguistic structure and implicit reasoning} are the limiting factors.
+
+For practitioners deploying LLM extractors in high-stakes domains, our work suggests:
+\begin{itemize}
+    \item Require human review for high-complexity passages where the model is more likely to struggle.
+    \item Use complexity scores and linguistic features as reliability signals rather than hedging alone.
+    \item Consider domain-specific fine-tuning or retrieval-augmented approaches for higher fidelity.
+\end{itemize}
+
+Causal knowledge is central to policymaking and research. Our results contribute to understanding when and how LLMs can reliably extract it, and where human oversight remains essential.
+
+\bibliography{references}
+\bibliographystyle{acl_natbib}
+
+\appendix
+
+\section*{Appendix A: Knowledge Graph Statistics}
+
+\raggedright
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Period} & \textbf{Nodes} & \textbf{Edges} & \textbf{Avg Degree} \\
+\midrule
+Great Moderation & 11 & 26 & 4.7 \\
+Post-Crisis ZLB & 12 & 26 & 4.3 \\
+Post-COVID Surge & 14 & 31 & 4.4 \\
+\bottomrule
+\end{tabular}
+\caption{Knowledge graph statistics by period.}
+\label{tab:kg_stats}
+\end{table}
+
+\section*{Appendix B: Alternative Evaluation Perspectives}
+
+\raggedright
+
+To demonstrate robustness across different failure mode definitions, we present visualizations of faithfulness by complexity under alternative evaluation criteria.
+
+\subsection*{B.1 Excluding Non-Detected Triplets (Mode 0)}
+
+Faithfulness patterns when focusing only on extracted triplets remain consistent:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{outputs/figures/fig_faithfulness_by_complexity_no_mode0_5.png}
+\caption{Faithfulness by complexity (excluding Modes 0 \& 5). Complexity degradation persists: 78\% (simple) to 57\% (complex).}
+\label{fig:alt_perspective_1}
+\end{figure}
+
+\subsection*{B.2 Relaxed Evaluation Criteria (Modes 2 \& 4 as Partial Successes)}
+
+When treating certain edge cases (wrong direction, hedge failure) as partial successes, overall rates improve but patterns hold:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{outputs/figures/fig_faithfulness_by_complexity_mode24_faithful_no_mode0_5.png}
+\caption{Faithfulness by complexity (modes 2 \& 4 as faithful, excluding 0 \& 5). Overall rates increase to ~82\% (simple) and ~67\% (complex), but degradation pattern persists.}
+\label{fig:alt_perspective_2}
+\end{figure}
+
+\subsection*{B.3 Failure Modes Under Alternative Criteria}
+
+The failure mode composition shifts under relaxed evaluation:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{outputs/figures/fig_human_failure_modes_by_complexity_no_mode0_5.png}
+\caption{Failure modes by complexity (excluding modes 0 \& 5, as \% of all triplets). Shows the subset of failures most directly attributable to model hallucination or misunderstanding.}
+\label{fig:alt_failures_1}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{outputs/figures/fig_human_failure_modes_by_complexity_mode24_faithful_no_mode0_5.png}
+\caption{Failure modes with relaxed criteria (modes 2 \& 4 as success, excluding 0 \& 5). Highlights only the most critical failures after relaxing edge case definitions.}
+\label{fig:alt_failures_2}
+\end{figure}
+
+All alternative perspectives confirm that complexity degradation and hedging correlation are robust findings.
+
+\section*{Appendix C: Knowledge Graph Visualizations}
+
+\raggedright
+
+Extracted causal relationships organized by period reveal the semantic structure of LLM extractions across economic regimes:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{outputs/figures/kg_great_moderation.png}
+\caption{Knowledge graph for Great Moderation period. Dominated by inflation-unemployment-interest-rate triangles with conventional policy transmission mechanisms. 11 nodes, 26 edges.}
+\label{fig:kg_gm}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{outputs/figures/kg_post_crisis_zlb.png}
+\caption{Knowledge graph for Post-Crisis ZLB period. Introduces asset purchases, financial conditions, wealth effects, and forward guidance. 12 nodes, 26 edges. More complex policy transmission.}
+\label{fig:kg_zlb}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{outputs/figures/kg_post_covid.png}
+\caption{Knowledge graph for Post-COVID period. Supply chain and labor market disruptions become central causal nodes. Reflects major shift in policy discourse. 14 nodes, 31 edges.}
+\label{fig:kg_covid}
+\end{figure}
+
+\section*{Appendix D: Period-Specific Complexity and Hedging Analysis}
+
+\raggedright
+
+Complexity and hedging patterns vary across economic periods, reflecting both linguistic shifts and the nature of policy discussions:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{outputs/figures/fig_complexity_and_hedged_triplets_by_period.png}
+\caption{Complexity and hedging by period. Mean complexity increases from Great Moderation (simpler, more conventional policy) through Post-COVID (more complex, rapid changes). Hedging prevalence also increases, reflecting greater uncertainty in later periods.}
+\label{fig:period_complexity_hedge}
+\end{figure}
+
+\section*{Appendix E: Use of LLM for Coding Assistance}
+
+\raggedright
+
+We use GitHub's Copilot CLI coding assistant to help test the code, write documentation, and improve the Google GenAI Batch API handling and results parsing.
+
+\section*{Appendix F: Extraction Prompt}
+
+The few-shots extraction prompt used for all 201 passages:
+
+{\noindent\tiny
+
+\textbf{System prompt:}
+
+You are a highly precise NLP annotator for extracting causal relationships from financial and macroeconomic text (FOMC minutes). Assume outputs will be used for economic research. A relationship is causal ONLY if changing the cause would change the effect (counterfactual). Exclude correlational statements. Fields: cause (minimal phrase), effect (minimal phrase), connector (core causal verb/mechanism), hedge (empty if absent), direction ("positive"/"negative"/"ambiguous"). Rules: (1) Only clearly causal; (2) No inference; (3) Separate connector from hedge; (4) Preserve hedging; (5) Minimal but meaningful; (6) Keep compound together; (7) Return empty if none.
+
+\vspace{6pt}
+
+\textbf{User prompt:}
+
+Extract causal relationships from passage. DO NOT return arrays - each triple is JSON object. Output ONLY valid JSON. If no causal relationships, return \{"triples": []\}. Example: "Oil prices boosted inflation. Fed rate hikes, expected to slow demand, contributed to labor market cooling." Output: \{"triples": [\{"cause": "oil prices", "connector": "boosted", "effect": "inflation", "hedge": "", "direction": "positive"\}, \{"cause": "Fed rate hikes", "connector": "slow", "effect": "demand", "hedge": "were expected to", "direction": "negative"\}, \{"cause": "Fed rate hikes", "connector": "contributed to", "effect": "cooling labor market", "hedge": "", "direction": "negative"\}]\} Passage: \{passage\}
+
+}
+
+\end{document}

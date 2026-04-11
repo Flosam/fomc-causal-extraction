@@ -18,10 +18,10 @@ uv run python -m src.extractor --poll
 # 3. Once complete, run full extraction
 uv run python -m src.extractor
 
-# 4. Run judgment
+# 4. (Optional) Run judgment for LLM-as-a-judge scoring
 uv run python -m src.judge
 
-# 5. Build annotation CSV
+# 5. Build annotation CSV (works with or without judge scores)
 uv run python -m src.build_annotation_csv
 ```
 
@@ -38,12 +38,14 @@ uv run python -m src.build_annotation_csv
 | `uv run python -m src.extractor --poll` | **Resume polling** existing batch jobs |
 | `uv run python -m src.extractor --skip-extracted` | Extract only new passages (skips ones in extractions.csv) |
 
-### Judgment Commands
+### Judgment Commands (Optional)
 
 | Command | What It Does |
 |---------|--------------|
-| `uv run python -m src.judge` | Submit new judgment batch job |
+| `uv run python -m src.judge` | Submit new judgment batch job (optional step) |
 | `uv run python -m src.judge --poll` | **Resume polling** existing judgment batch jobs |
+
+**Note**: Judgment is optional. You can build the annotation CSV and manually annotate extracted triples without running LLM-as-a-judge.
 
 ### Monitoring Commands
 
@@ -51,7 +53,7 @@ uv run python -m src.build_annotation_csv
 |---------|--------------|
 | `cat outputs/batch_jobs.json` | View all active batch jobs and their status |
 | `cat outputs/extractions.csv` | View extraction results |
-| `cat outputs/judge_scores.csv` | View judgment results |
+| `cat outputs/judge_scores.csv` | View judgment results (if judge was run) |
 
 ---
 
@@ -135,7 +137,7 @@ uv run python -m src.extractor
 uv run python -m src.extractor --poll
 # ✅ Complete! 1234 triples extracted
 
-# Run judgment
+# (Optional) Run judgment
 uv run python -m src.judge
 # (Wait or interrupt)
 
@@ -143,7 +145,7 @@ uv run python -m src.judge
 uv run python -m src.judge --poll
 # ✅ Complete! All triples judged
 
-# Build final dataset
+# Build final dataset (works with or without judge scores)
 uv run python -m src.build_annotation_csv
 ```
 
@@ -310,7 +312,7 @@ Each triple requires 2 requests (complexity + faithfulness)
 | `outputs/passages.csv` | Preprocessor | Input passages for extraction |
 | `outputs/held_out_passages.csv` | First `--held-out-only` run | 20-passage test set |
 | `outputs/extractions.csv` | Extraction completion | Raw extraction results |
-| `outputs/judge_scores.csv` | Judgment completion | Complexity + faithfulness scores |
+| `outputs/judge_scores.csv` | Judgment completion (optional) | Complexity + faithfulness scores |
 | `outputs/annotated.csv` | build_annotation_csv | Final merged dataset for analysis |
 
 ---

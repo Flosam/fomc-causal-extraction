@@ -10,7 +10,7 @@ from pydantic import BaseModel, ValidationError
 
 from src.config import get_api_key, CONFIG
 from src.models.base import LLMModel, CausalTriple, JudgmentResult, ExtractionError, TokenUsage
-from src.models.schemas import ExtractionResponseSchema, ComplexityJudgmentSchema, FaithfulnessJudgmentSchema
+from src.models.schemas import ExtractionResponseSchema, CausalTripleSchema, ComplexityJudgmentSchema, FaithfulnessJudgmentSchema
 from src.prompts import format_extraction, format_complexity_judge, format_faithfulness_judge
 
 logger = logging.getLogger(__name__)
@@ -123,8 +123,6 @@ class GeminiModel(LLMModel):
                     effect=triple_schema.effect,
                     hedge=triple_schema.hedge,
                     direction=triple_schema.direction,
-                    strength=triple_schema.strength,
-                    type=triple_schema.type,
                     raw_response=raw,
                     prompt_tokens=usage.prompt_tokens,
                     completion_tokens=usage.completion_tokens,
@@ -143,6 +141,110 @@ class GeminiModel(LLMModel):
         except ValidationError as exc:
             parse_time = time.time() - parse_start
             total_time = time.time() - start_time
+            
+            # Attempt to recover from truncated JSON (EOF errors)
+            # Try to extract complete triple objects from the truncated response
+            recovered_triples = []
+            try:
+                # Find complete triple objects that have all 5 fields
+                # Pattern: object with all fields including direction at the end (indicates completeness)
+                import re
+                pattern = r'\{[^{}]*?"cause"[^{}]*?"connector"[^{}]*?"effect"[^{}]*?"hedge"[^{}]*?"direction"\s*:\s*"(?:positive|negative|ambiguous)"\s*\}'
+                matches = re.findall(pattern, raw, re.DOTALL)
+                
+                for match in matches:
+                    try:
+                        # Parse the JSON object
+                        triple_obj = json.loads(match)
+                        # Validate it has all required fields
+                        if all(k in triple_obj for k in ['cause', 'connector', 'effect', 'hedge', 'direction']):
+                            validated_triple = CausalTripleSchema.model_validate(triple_obj)
+                            recovered_triples.append(CausalTriple(
+                                cause=validated_triple.cause,
+                                connector=validated_triple.connector,
+                                effect=validated_triple.effect,
+                                hedge=validated_triple.hedge,
+                                direction=validated_triple.direction,
+                                raw_response=raw,
+                                prompt_tokens=usage.prompt_tokens,
+                                completion_tokens=usage.completion_tokens,
+                            ))
+                    except (json.JSONDecodeError, ValidationError):
+                        # Skip invalid objects
+                        pass
+                
+                if recovered_triples:
+                    logger.warning(
+                        "TRUNCATION RECOVERY: Extracted %d complete triples from truncated JSON. "
+                        "Original validation error: %s",
+                        len(recovered_triples), str(exc)[:100]
+                    )
+                    return recovered_triples
+                    
+            except Exception as recovery_exc:
+                logger.debug("Truncation recovery attempt failed: %s", recovery_exc)
+            
+            # Attempt to recover from array-format responses
+            # LLM sometimes returns arrays instead of objects: ["cause", "connector", "effect", "hedge", "direction"]
+            try:
+                parsed = json.loads(raw)
+                if isinstance(parsed, dict) and "triples" in parsed:
+                    recovered_triples = []
+                    triples_data = parsed["triples"]
+                    
+                    if isinstance(triples_data, list):
+                        for item in triples_data:
+                            # Check if item is an array instead of object
+                            if isinstance(item, (list, tuple)) and len(item) == 5:
+                                # Map array positions to schema fields
+                                triple_dict = {
+                                    "cause": item[0],
+                                    "connector": item[1],
+                                    "effect": item[2],
+                                    "hedge": item[3] if item[3] else "",
+                                    "direction": item[4]
+                                }
+                                # Validate the recovered object
+                                try:
+                                    validated_triple = CausalTripleSchema.model_validate(triple_dict)
+                                    recovered_triples.append(CausalTriple(
+                                        cause=validated_triple.cause,
+                                        connector=validated_triple.connector,
+                                        effect=validated_triple.effect,
+                                        hedge=validated_triple.hedge,
+                                        direction=validated_triple.direction,
+                                        raw_response=raw,
+                                        prompt_tokens=usage.prompt_tokens,
+                                        completion_tokens=usage.completion_tokens,
+                                    ))
+                                except ValidationError as ve:
+                                    logger.warning("Array recovery failed for item: %s - %s", item, ve)
+                            elif isinstance(item, dict):
+                                # Already an object, try to validate it
+                                try:
+                                    validated_triple = CausalTripleSchema.model_validate(item)
+                                    recovered_triples.append(CausalTriple(
+                                        cause=validated_triple.cause,
+                                        connector=validated_triple.connector,
+                                        effect=validated_triple.effect,
+                                        hedge=validated_triple.hedge,
+                                        direction=validated_triple.direction,
+                                        raw_response=raw,
+                                        prompt_tokens=usage.prompt_tokens,
+                                        completion_tokens=usage.completion_tokens,
+                                    ))
+                                except ValidationError:
+                                    pass  # Skip invalid objects
+                    
+                    if recovered_triples:
+                        logger.warning("ARRAY RECOVERY: Successfully recovered %d triples from array format. "
+                                      "Prompt should prevent this - check if LLM is following schema.", 
+                                      len(recovered_triples))
+                        return recovered_triples
+            except Exception as recovery_exc:
+                logger.debug("Array recovery attempt failed: %s", recovery_exc)
+            
+            # If recovery failed, log original error and return empty
             logger.error("Pydantic validation failed after %.2fs: %s\nRaw: %s", 
                         parse_time, exc, raw)
             return []
@@ -167,6 +269,15 @@ class GeminiModel(LLMModel):
         Returns:
             BatchJob object with job ID and status
         """
+        # Verify no duplicate passage IDs in metadata
+        passage_ids = [req.metadata.get("passage_id") for req in requests if req.metadata]
+        unique_ids = set(passage_ids)
+        if len(passage_ids) != len(unique_ids):
+            duplicates = len(passage_ids) - len(unique_ids)
+            logger.error("CRITICAL: Batch has %d duplicate requests! Unique: %d, Total: %d", 
+                        duplicates, len(unique_ids), len(passage_ids))
+            raise ValueError(f"Batch contains {duplicates} duplicate passage IDs. This would waste tokens!")
+        
         logger.info("Submitting batch job with %d requests (display_name: %s)", 
                    len(requests), display_name or "None")
         
@@ -222,6 +333,14 @@ class GeminiModel(LLMModel):
                 return self._client.batches.get(name=batch_name)
             except Exception as exc:
                 error_msg = str(exc).lower()
+                
+                # Check for authentication/permission errors
+                if 'permission_denied' in error_msg or '403' in error_msg or 'unregistered callers' in error_msg:
+                    raise ExtractionError(
+                        f"Authentication error: API key does not have permission to access Batch API.\n"
+                        f"Error: {exc}"
+                    )
+                
                 # Check if it's a network/connectivity error
                 if any(keyword in error_msg for keyword in ['connect', 'network', 'timeout', 'getaddrinfo']):
                     logger.warning("Network error polling batch status attempt %d/%d: %s", 
@@ -260,10 +379,11 @@ class GeminiModel(LLMModel):
             raise ExtractionError(f"Batch job {batch_job.name} failed: {batch_job.error}")
         
         # Get inlined responses (for Gemini Developer API)
-        if batch_job.dest and batch_job.dest.inlined_responses:
+        if batch_job.dest and hasattr(batch_job.dest, 'inlined_responses'):
+            responses = batch_job.dest.inlined_responses or []
             logger.info("Retrieved %d inlined responses from batch job %s", 
-                       len(batch_job.dest.inlined_responses), batch_job.name)
-            return batch_job.dest.inlined_responses
+                       len(responses), batch_job.name)
+            return responses
         
         # Fallback: GCS/BigQuery (for Vertex AI)
         if batch_job.dest and batch_job.dest.gcs_uri:
@@ -303,7 +423,8 @@ class GeminiModel(LLMModel):
             "system_instruction": system,
             "temperature": 0.0,
             "response_mime_type": "application/json",
-            "response_json_schema": ExtractionResponseSchema.model_json_schema(),
+            # NOTE: response_json_schema causes Gemini to output escaped strings instead of objects
+            # Rely on prompt instructions for structure instead
         }
         
         if "thinking" in self.model_name.lower() and CONFIG.get("max_thinking_tokens"):

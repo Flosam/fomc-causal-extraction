@@ -9,6 +9,7 @@ Usage:
     python -m src.preprocessor
 """
 
+import csv
 import logging
 import re
 from pathlib import Path
@@ -206,7 +207,7 @@ def build_passages(sampled_csv: Path = SAMPLED_CSV) -> pd.DataFrame:
     result = pd.DataFrame(records)
     output_path = PASSAGES_CSV
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    result.to_csv(output_path, index=False)
+    result.to_csv(output_path, index=False, quoting=csv.QUOTE_NONNUMERIC)
     logger.info(
         "Wrote %d passages from %d meetings to %s",
         len(result), len(df), output_path,

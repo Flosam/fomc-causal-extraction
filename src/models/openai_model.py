@@ -101,8 +101,6 @@ class OpenAIModel(LLMModel):
                     effect=effect,
                     hedge=item.get("hedge", ""),
                     direction=item.get("direction", "ambiguous"),
-                    strength=item.get("strength", ""),
-                    type=item.get("type", ""),
                     raw_response=raw,
                     prompt_tokens=usage.prompt_tokens,
                     completion_tokens=usage.completion_tokens,

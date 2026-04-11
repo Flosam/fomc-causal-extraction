@@ -1,0 +1,840 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex.fmt)
+ restricted \write18 enabled.
+entering extended mode
+(paper_draft.tex
+LaTeX2e <2025-11-01>
+L3 programming layer <2025-12-24>
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/base\article.cls
+Document Class: article 2025/01/22 v1.4n Standard LaTeX document class
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/base\size11.clo))
+(acl.sty
+Conference Style for ACL
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/xcolor\xcolor.sty
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\color.cfg)
+
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/graphics-def\pdftex.def
+)
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/graphics\mathcolor.ltx)
+) (C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/lineno\lineno.sty
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/etoolbox\etoolbox.sty)
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/kvoptions\kvoptions.sty
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/graphics\keyval.sty)
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/generic/ltxcmds\ltxcmds.sty)
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/kvsetkeys\kvsetkeys.sty
+)))
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.sty
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/generic/iftex\ifvtex.sty
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/generic/iftex\iftex.sty))
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.cfg))
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption.sty
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption3.sty))
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/natbib\natbib.sty)
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hyperref.sty
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/generic/kvdefinekeys\kvdefine
+keys.sty)
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/generic/pdfescape\pdfescape.s
+ty
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/generic/pdftexcmds\pdftexcmds
+.sty
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/generic/infwarerr\infwarerr.s
+ty)))
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/hycolor\hycolor.sty)
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\nameref.sty
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/refcount\refcount.sty)
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/generic/gettitlestring\gettit
+lestring.sty))
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/generic/stringenc\stringenc.s
+ty) (C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\pd1enc.def
+) (C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/generic/intcalc\intcalc.sty
+) (C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\puenc.def)
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/url\url.sty)
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/generic/bitset\bitset.sty
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/generic/bigintcalc\bigintcalc
+.sty)))
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hpdftex.def
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/rerunfilecheck\rerunfil
+echeck.sty
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/generic/uniquecounter\uniquec
+ounter.sty))))
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\times.sty)
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/base\latexsym.sty)
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphicx.sty
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphics.sty
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/graphics\trig.sty)
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\graphics.c
+fg)))
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/booktabs\booktabs.sty)
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsmath.sty
+For additional information on amsmath, use the `?' option.
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amstext.sty
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsgen.sty))
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsbsy.sty)
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsopn.sty))
+! Undefined control sequence.
+l.9 \aclfinalcopy
+                 
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ot1ptm.fd)
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdf
+tex.def)
+No file paper_draft.aux.
+
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mk
+ii
+[Loading MPS to PDF converter (version 2006.09.02).]
+)
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-b
+ase.sty
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/grfext\grfext.sty)
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.c
+fg))
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/base\ulasy.fd)
+
+Package lineno Warning: Line number reference failed, re-run to get it right.
+
+
+Underfull \hbox (badness 1721) in paragraph at lines 22--23
+\OT1/ptm/m/n/10 their re-li-a-bil-ity on domain-specific in-sti-tu-
+
+Underfull \hbox (badness 3449) in paragraph at lines 29--30
+[]\OT1/ptm/m/n/10.95 Large lan-guage mod-els have demon-strated
+
+Underfull \hbox (badness 6396) in paragraph at lines 29--30
+\OT1/ptm/m/n/10.95 sur-pris-ing ca-pa-bil-ity for struc-tured in-for-ma-
+
+Underfull \hbox (badness 1584) in paragraph at lines 29--30
+\OT1/ptm/m/it/10.95 edge from dense, domain-specific in-sti-tu-tional
+
+Underfull \hbox (badness 1325) in paragraph at lines 29--30
+\OT1/ptm/m/n/10.95 extraction|plausible-sounding but un-sup-ported
+
+Underfull \hbox (badness 7814) in paragraph at lines 29--30
+\OT1/ptm/m/n/10.95 causal claims|could mis-lead eco-nomic re-
+
+Underfull \hbox (badness 1107) in paragraph at lines 34--35
+[]\OT1/ptm/m/n/10.95 Do ex-trac-tion fail-ures vary sys-tem-at-i-cally
+
+Underfull \hbox (badness 2368) in paragraph at lines 35--36
+\OT1/ptm/m/n/10.95 nomic regimes (Great Mod-er-a-tion, Post-
+
+Underfull \hbox (badness 3148) in paragraph at lines 38--39
+\OT1/ptm/m/n/10.95 pas-sages from 30 FOMC meet-ings strat-i-fied
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ts1ptm.fd)
+Underfull \hbox (badness 10000) in paragraph at lines 42--43
+[]\OT1/ptm/b/n/10.95 Complexity-dependent degra-da-tion:
+
+Underfull \hbox (badness 6268) in paragraph at lines 42--43
+\OT1/ptm/m/n/10.95 Faith-ful-ness drops from 79.5% (sim-ple
+
+Underfull \hbox (badness 1281) in paragraph at lines 43--44
+\OT1/ptm/m/n/10.95 re-la-tion-ships), par-tial ex-trac-tions, and di-
+[1{C:/Users/flore/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/fl
+ore/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}]
+Underfull \hbox (badness 2600) in paragraph at lines 44--45
+[]\OT1/ptm/b/n/10.95 Robust across pe-ri-ods: \OT1/ptm/m/n/10.95 Faith-ful-ness
+ is
+
+Package natbib Warning: Citation `banko2007open' on page 2 undefined on input l
+ine 55.
+
+
+Package natbib Warning: Citation `cui2020survey' on page 2 undefined on input l
+ine 55.
+
+
+Underfull \hbox (badness 1297) in paragraph at lines 55--56
+\OT1/ptm/m/n/10.95 have im-proved ex-trac-tion cov-er-age and pre-ci-
+
+Package natbib Warning: Citation `wei2022chain' on page 2 undefined on input li
+ne 59.
+
+
+Package natbib Warning: Citation `ye2023towards' on page 2 undefined on input l
+ine 59.
+
+
+Package natbib Warning: Citation `ji2023survey' on page 2 undefined on input li
+ne 61.
+
+
+Package natbib Warning: Citation `todd2023counting' on page 2 undefined on inpu
+t line 61.
+
+
+Package natbib Warning: Citation `sap2019atomic' on page 2 undefined on input l
+ine 65.
+
+
+Package natbib Warning: Citation `hwang2021comet' on page 2 undefined on input 
+line 65.
+
+
+Underfull \hbox (badness 1762) in paragraph at lines 65--66
+\OT1/ptm/m/n/10.95 have emerged as a crit-i-cal re-source in NLP.
+
+Package natbib Warning: Citation `zhang2023knowledge' on page 2 undefined on in
+put line 67.
+
+
+Package natbib Warning: Citation `deng2024large' on page 2 undefined on input l
+ine 67.
+
+
+Package natbib Warning: Citation `newman2022event' on page 2 undefined on input
+ line 67.
+
+
+Package natbib Warning: Citation `miltiadous2024event' on page 2 undefined on i
+nput line 67.
+
+
+Package natbib Warning: Citation `hansen2016policy' on page 2 undefined on inpu
+t line 71.
+
+
+Package natbib Warning: Citation `gentzkow2019measuring' on page 2 undefined on
+ input line 71.
+
+
+Package natbib Warning: Citation `romer2004monetary' on page 2 undefined on inp
+ut line 71.
+
+
+Package natbib Warning: Citation `hansen2016policy' on page 2 undefined on inpu
+t line 73.
+
+
+Underfull \hbox (badness 1688) in paragraph at lines 73--74
+\OT1/ptm/m/n/10.95 com-mu-ni-ca-tions. Hansen and McMa-hon (\OT1/ptm/b/n/10.95 
+?\OT1/ptm/m/n/10.95 )
+[2]
+
+Package natbib Warning: Citation `ung2022evaluating' on page 3 undefined on inp
+ut line 77.
+
+
+Underfull \hbox (badness 1122) in paragraph at lines 83--84
+\OT1/ptm/m/n/10.95 eral Re-serve's pub-lic archive (cov-er-ing 1994--
+
+Underfull \hbox (badness 1354) in paragraph at lines 109--110
+\OT1/ptm/m/n/10.95 itly or im-plic-itly re-lat-ing cause to ef-fect
+
+Underfull \hbox (badness 1226) in paragraph at lines 110--111
+\OT1/ptm/m/n/10.95 qual-i-fy-ing the causal claim (e.g., ``may'',
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ot1pcr.fd)
+Underfull \hbox (badness 6141) in paragraph at lines 111--112
+[]\OT1/ptm/b/n/10.95 Direction: \OT1/ptm/m/n/10.95 Po-lar-ity of the causal ef-
+
+
+Underfull \hbox (badness 3861) in paragraph at lines 111--112
+\OT1/pcr/m/n/10.95 negative \OT1/ptm/m/n/10.95 (cause de-creases ef-fect), or
+
+Underfull \hbox (badness 1527) in paragraph at lines 122--123
+\OT1/ptm/m/n/10.95 is the causal claim in the orig-i-nal text?
+[3]
+Underfull \hbox (badness 3179) in paragraph at lines 150--151
+[]\OT1/ptm/m/n/10.95 This 66.9% faith-ful-ness rate is non-trivial
+
+LaTeX Warning: Reference `fig:complexity' on page 4 undefined on input line 154
+.
+
+
+LaTeX Warning: File `outputs/figures/fig_faithfulness_by_complexity.png' not fo
+und on input line 158.
+
+
+! Package pdftex.def Error: File `outputs/figures/fig_faithfulness_by_complexit
+y.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.158 ...gures/fig_faithfulness_by_complexity.png}
+                                                  
+
+Underfull \hbox (badness 3514) in paragraph at lines 165--166
+[]\OT1/ptm/b/n/10.95 Complexity 1: \OT1/ptm/m/n/10.95 105/132 triples faith-ful
+
+[4]
+
+LaTeX Warning: Reference `fig:period' on page 5 undefined on input line 176.
+
+
+LaTeX Warning: File `outputs/figures/fig_faithfulness_by_period.png' not found 
+on input line 180.
+
+
+! Package pdftex.def Error: File `outputs/figures/fig_faithfulness_by_period.pn
+g' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.180 ...s/figures/fig_faithfulness_by_period.png}
+                                                  
+
+Underfull \hbox (badness 10000) in paragraph at lines 187--188
+[]\OT1/ptm/b/n/10.95 Great Mod-er-a-tion: \OT1/ptm/m/n/10.95 106/156 faith-ful
+
+Underfull \hbox (badness 10000) in paragraph at lines 189--190
+[]\OT1/ptm/b/n/10.95 Post-COVID Surge: \OT1/ptm/m/n/10.95 146/222 faith-ful
+
+LaTeX Warning: Reference `fig:failures_period' on page 5 undefined on input lin
+e 194.
+
+
+LaTeX Warning: File `outputs/figures/fig_failure_modes_by_period.png' not found
+ on input line 198.
+
+
+! Package pdftex.def Error: File `outputs/figures/fig_failure_modes_by_period.p
+ng' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.198 .../figures/fig_failure_modes_by_period.png}
+                                                  
+
+LaTeX Warning: Reference `fig:failures' on page 5 undefined on input line 205.
+
+
+LaTeX Warning: File `outputs/figures/fig_human_failure_modes_by_complexity.png'
+ not found on input line 209.
+
+
+! Package pdftex.def Error: File `outputs/figures/fig_human_failure_modes_by_co
+mplexity.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.209 ...ig_human_failure_modes_by_complexity.png}
+                                                  
+
+Underfull \hbox (badness 1275) in paragraph at lines 214--215
+\OT1/ptm/m/n/10.95 tribute non-uniformly to over-all un-faith-ful-ness
+
+Underfull \hbox (badness 1681) in paragraph at lines 222--224
+\OT1/ptm/m/n/10.95 text): 192/259 faith-ful (74.1%) Among non-
+
+Underfull \hbox (badness 1354) in paragraph at lines 225--226
+\OT1/ptm/m/n/10.95 the pre-dom-i-nant fac-tor in caus-ing er-rors, but
+[5]
+
+LaTeX Warning: Reference `fig:hedge_faith' on page 6 undefined on input line 22
+7.
+
+
+LaTeX Warning: File `outputs/figures/fig_hedged_vs_nonhedged_faithfulness.png' 
+not found on input line 231.
+
+
+! Package pdftex.def Error: File `outputs/figures/fig_hedged_vs_nonhedged_faith
+fulness.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.231 ...fig_hedged_vs_nonhedged_faithfulness.png}
+                                                  
+
+LaTeX Warning: File `outputs/figures/fig_hedged_vs_nonhedged_complexity.png' no
+t found on input line 240.
+
+
+! Package pdftex.def Error: File `outputs/figures/fig_hedged_vs_nonhedged_compl
+exity.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.240 ...s/fig_hedged_vs_nonhedged_complexity.png}
+                                                  
+
+LaTeX Warning: File `outputs/figures/fig_hedged_vs_nonhedged_failure_modes.png'
+ not found on input line 249.
+
+
+! Package pdftex.def Error: File `outputs/figures/fig_hedged_vs_nonhedged_failu
+re_modes.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.249 ...ig_hedged_vs_nonhedged_failure_modes.png}
+                                                  
+[6]
+Underfull \hbox (badness 1281) in paragraph at lines 261--262
+[]\OT1/ptm/b/n/10.95 Mode 0 (Missed Triples): \OT1/ptm/m/n/10.95 34 in-stances
+
+Underfull \hbox (badness 2237) in paragraph at lines 262--263
+[]\OT1/ptm/b/n/10.95 Mode 1 (Hal-lu-ci-na-tions): \OT1/ptm/m/n/10.95 46 in-stan
+ces
+
+Underfull \hbox (badness 1661) in paragraph at lines 265--266
+[]\OT1/ptm/b/n/10.95 Mode 4 (Hedge Fail-ure): \OT1/ptm/m/n/10.95 18 in-stances
+
+Underfull \hbox (badness 2134) in paragraph at lines 289--290
+\OT1/ptm/m/n/10.95 unemployment-interest-rate tri-an-gles, with
+
+Underfull \hbox (badness 5036) in paragraph at lines 290--291
+[]\OT1/ptm/b/n/10.95 Post-Crisis ZLB: \OT1/ptm/m/n/10.95 In-tro-duces as-set pu
+r-
+
+LaTeX Warning: Reference `tab:kg_stats' on page 7 undefined on input line 294.
+
+
+Underfull \hbox (badness 1028) in paragraph at lines 302--303
+\OT1/ptm/m/n/10.95 plex-ity scor-ing re-vealed clear degra-da-tion
+[7]
+
+! LaTeX Error: Unicode character Γ£ô (U+2713)
+               not set up for use with LaTeX.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.310     \item Γ£ô
+                    Extracted causal triples from FOMC minutes
+
+! LaTeX Error: Unicode character Γ£ô (U+2713)
+               not set up for use with LaTeX.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.311     \item Γ£ô
+                    Stratified evaluation across linguistic complexity (simp...
+
+
+! LaTeX Error: Unicode character Γ£ô (U+2713)
+               not set up for use with LaTeX.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.312     \item Γ£ô
+                    Examined period effects (Great Moderation, Post-Crisis, ...
+
+
+! LaTeX Error: Unicode character Γ£ô (U+2713)
+               not set up for use with LaTeX.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.313     \item Γ£ô
+                    Conducted human evaluation for ground truth
+
+Underfull \hbox (badness 2865) in paragraph at lines 313--314
+[]\OT1/ptm/m/n/10.95 Conducted hu-man eval-u-a-tion for ground
+
+! LaTeX Error: Unicode character Γ£ô (U+2713)
+               not set up for use with LaTeX.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.314     \item Γ£ô
+                    Analyzed extraction fidelity and failure modes
+
+Underfull \hbox (badness 5726) in paragraph at lines 314--315
+[]\OT1/ptm/m/n/10.95 Analyzed ex-trac-tion fi-delity and fail-ure
+
+Underfull \hbox (badness 1142) in paragraph at lines 324--325
+\OT1/ptm/m/n/10.95 a do-main ex-pert, single-annotator eval-u-a-
+
+Underfull \hbox (badness 1178) in paragraph at lines 343--344
+[]\OT1/ptm/b/n/10.95 LLM-as-a-judge: \OT1/ptm/m/n/10.95 Com-pare hu-man juge-
+
+Underfull \hbox (badness 1953) in paragraph at lines 344--345
+[]\OT1/ptm/b/n/10.95 RAG to im-ple-men-ta-tion: \OT1/ptm/m/n/10.95 Test whether
+
+
+Underfull \hbox (badness 1189) in paragraph at lines 351--352
+\OT1/ptm/m/n/10.95 eral Re-serve meet-ing min-utes. We find that
+[8]
+Underfull \hbox (badness 10000) in paragraph at lines 359--360
+[]\OT1/ptm/m/n/10.95 Consider domain-specific fine-tuning or
+
+Underfull \hbox (badness 1215) in paragraph at lines 359--360
+\OT1/ptm/m/n/10.95 retrieval-augmented ap-proaches for higher
+No file paper_draft.bbl.
+
+Overfull \hbox (772.98267pt too wide) in paragraph at lines 405--405
+[]    \OT1/pcr/m/n/10.95 You are a highly precise NLP annotator specializing in
+ extracting causal relationships from financial and macroeconomic text, such as
+ FOMC minutes.[] 
+
+Overfull \hbox (135.69344pt too wide) in paragraph at lines 405--405
+[]    \OT1/pcr/m/n/10.95 Assume outputs will be used for economic research.[] 
+
+Overfull \hbox (516.75298pt too wide) in paragraph at lines 405--405
+[]    \OT1/pcr/m/n/10.95 A relationship is causal ONLY if changing the cause wo
+uld change the effect (counterfactual interpretation).[] 
+
+Overfull \hbox (418.2031pt too wide) in paragraph at lines 405--405
+[]    \OT1/pcr/m/n/10.95 Exclude correlational or interpretive statements (e.g.
+ suggests, indicates, consistent with).[] 
+
+Overfull \hbox (214.53334pt too wide) in paragraph at lines 405--405
+[]    \OT1/pcr/m/n/10.95 - cause: factor producing the effect (minimal complete
+ phrase)[] 
+
+Overfull \hbox (148.83342pt too wide) in paragraph at lines 405--405
+[]    \OT1/pcr/m/n/10.95 - effect: outcome affected (minimal complete phrase)[]
+ 
+
+Overfull \hbox (96.27348pt too wide) in paragraph at lines 405--405
+[]    \OT1/pcr/m/n/10.95 - connector: core causal verb/mechanism only[] 
+
+Overfull \hbox (253.9533pt too wide) in paragraph at lines 405--405
+[]    \OT1/pcr/m/n/10.95 - hedge: uncertainty modifying the connector; empty st
+ring if absent[] 
+
+Overfull \hbox (181.68338pt too wide) in paragraph at lines 405--405
+[]        \OT1/pcr/m/n/10.95 - "positive": cause and effect move in same direct
+ion[] 
+
+Overfull \hbox (214.53334pt too wide) in paragraph at lines 405--405
+[]        \OT1/pcr/m/n/10.95 - "negative": cause and effect move in opposite di
+rections[] 
+
+Overfull \hbox (247.3833pt too wide) in paragraph at lines 405--405
+[]    \OT1/pcr/m/n/10.95 1. Include only clearly causal relationships (counterf
+actual test).[] 
+
+Overfull \hbox (17.43358pt too wide) in paragraph at lines 405--405
+[]    \OT1/pcr/m/n/10.95 2. Do not infer beyond the text.[] 
+
+Overfull \hbox (207.96335pt too wide) in paragraph at lines 405--405
+[]    \OT1/pcr/m/n/10.95 3. Separate connector (verb) from hedge (uncertainty p
+hrase).[] 
+
+Overfull \hbox (148.83342pt too wide) in paragraph at lines 405--405
+[]    \OT1/pcr/m/n/10.95 5. Keep phrases minimal but economically meaningful.[]
+ 
+
+Overfull \hbox (76.5635pt too wide) in paragraph at lines 405--405
+[]    \OT1/pcr/m/n/10.95 6. Keep compound causes/effects together.[] 
+
+Overfull \hbox (280.23326pt too wide) in paragraph at lines 405--405
+[]    \OT1/pcr/m/n/10.95 7. If you do not find any causal relationships, return
+ all fields empty.[] 
+
+Overfull \hbox (339.36319pt too wide) in paragraph at lines 431--431
+[]    \OT1/pcr/m/n/10.95 Extract causal relationships from the passage. Follow 
+the output schema provided.[] 
+
+Overfull \hbox (365.64316pt too wide) in paragraph at lines 431--431
+[]    \OT1/pcr/m/n/10.95 DO NOT return arrays of values - each triple must be a
+ JSON object with named fields.[] 
+
+Overfull \hbox (260.52328pt too wide) in paragraph at lines 431--431
+[]    \OT1/pcr/m/n/10.95 Output ONLY valid JSON. No explanations, no rationale,
+ no extra text.[] 
+
+Overfull \hbox (221.10333pt too wide) in paragraph at lines 431--431
+[]    \OT1/pcr/m/n/10.95 If there are no causal relationships, return {{"triple
+s": []}}.[] 
+
+Overfull \hbox (694.14276pt too wide) in paragraph at lines 431--431
+[]    \OT1/pcr/m/n/10.95 "Rising oil prices boosted inflation. The Fed's rate h
+ikes, which were expected to slow demand, contributed to a cooling labor market
+."[] 
+
+Overfull \hbox (608.73286pt too wide) in paragraph at lines 431--431
+[]        \OT1/pcr/m/n/10.95 {{"cause": "rising oil prices", "connector": "boos
+ted", "effect": "inflation", "hedge": "", "direction": "positive"}},[] 
+
+Overfull \hbox (654.72281pt too wide) in paragraph at lines 431--431
+[]        \OT1/pcr/m/n/10.95 {{"cause": "Fed rate hikes", "connector": "slow", 
+"effect": "demand", "hedge": "were expected to", "direction": "negative"}},[] 
+
+Overfull \hbox (700.71275pt too wide) in paragraph at lines 431--431
+[]        \OT1/pcr/m/n/10.95 {{"cause": "Fed rate hikes", "connector": "contrib
+uted to", "effect": "cooling labor market", "hedge": "", "direction": "negative
+"}}[] 
+
+Overfull \hbox (23.3402pt too wide) in paragraph at lines 438--447
+ [][] 
+
+LaTeX Warning: File `outputs/figures/fig_faithfulness_by_complexity_no_mode0_5.
+png' not found on input line 461.
+
+
+! Package pdftex.def Error: File `outputs/figures/fig_faithfulness_by_complexit
+y_no_mode0_5.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.461 ...aithfulness_by_complexity_no_mode0_5.png}
+                                                  
+
+Underfull \hbox (badness 2376) in paragraph at lines 462--462
+[]\OT1/ptm/m/n/10 Figure 8: |Faith-ful-ness by com-plex-ity (ex-clud-ing
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+LaTeX Warning: File `outputs/figures/fig_faithfulness_by_complexity_mode24_fait
+hful_no_mode0_5.png' not found on input line 472.
+
+
+! Package pdftex.def Error: File `outputs/figures/fig_faithfulness_by_complexit
+y_mode24_faithful_no_mode0_5.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.472 ...omplexity_mode24_faithful_no_mode0_5.png}
+                                                  
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[9]
+
+LaTeX Warning: File `outputs/figures/fig_human_failure_modes_by_complexity_no_m
+ode0_5.png' not found on input line 483.
+
+
+! Package pdftex.def Error: File `outputs/figures/fig_human_failure_modes_by_co
+mplexity_no_mode0_5.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.483 ...ilure_modes_by_complexity_no_mode0_5.png}
+                                                  
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+LaTeX Warning: File `outputs/figures/fig_human_failure_modes_by_complexity_mode
+24_faithful_no_mode0_5.png' not found on input line 490.
+
+
+! Package pdftex.def Error: File `outputs/figures/fig_human_failure_modes_by_co
+mplexity_mode24_faithful_no_mode0_5.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.490 ...omplexity_mode24_faithful_no_mode0_5.png}
+                                                  
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+LaTeX Warning: File `outputs/figures/kg_great_moderation.png' not found on inpu
+t line 505.
+
+
+! Package pdftex.def Error: File `outputs/figures/kg_great_moderation.png' not 
+found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.505 ...{outputs/figures/kg_great_moderation.png}
+                                                  
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+LaTeX Warning: File `outputs/figures/kg_post_crisis_zlb.png' not found on input
+ line 514.
+
+
+! Package pdftex.def Error: File `outputs/figures/kg_post_crisis_zlb.png' not f
+ound: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.514 ...]{outputs/figures/kg_post_crisis_zlb.png}
+                                                  
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+LaTeX Warning: File `outputs/figures/kg_post_covid.png' not found on input line
+ 523.
+
+
+! Package pdftex.def Error: File `outputs/figures/kg_post_covid.png' not found:
+ using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.523 ...width]{outputs/figures/kg_post_covid.png}
+                                                  
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+LaTeX Warning: File `outputs/figures/fig_complexity_and_hedged_triplets_by_peri
+od.png' not found on input line 534.
+
+
+! Package pdftex.def Error: File `outputs/figures/fig_complexity_and_hedged_tri
+plets_by_period.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.534 ...lexity_and_hedged_triplets_by_period.png}
+                                                  
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+Package natbib Warning: There were undefined citations.
+
+[10] [11] [12] (paper_draft.aux)Trying to make PK font tcrm1095 at 600 DPI...
+The METAFONT mode is: ljfour
+Creating tcrm1095.pk...
+Running miktex-mf.exe...
+This is METAFONT, Version 2.71828182 (MiKTeX 25.12)
+
+
+
+
+
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\fonts/source/jknappen/ec\tcrm1095
+
+.mf
+
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\fonts/source/jknappen/ec\exbase.m
+
+f)
+
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\fonts/source/jknappen/ec\tcrm.mf
+
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\fonts/source/jknappen/ec\txsymb.m
+
+f
+
+ Ok
+
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\fonts/source/jknappen/ec\exaccess
+
+.mf
+
+ Ok)
+
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\fonts/source/jknappen/ec\txpseudo
+
+.mf
+
+ Ok)
+
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\fonts/source/jknappen/ec\txaccent
+
+.mf
+
+ Ok [0] [1] [2] [3] [4] [5] [6] [7] [8] [9] [10] [11] [12] [27] [29])
+
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\fonts/source/jknappen/ec\txgen.mf
+
+ Ok [100] [109] [98] [99] [108])
+
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\fonts/source/jknappen/ec\txsymbol
+
+.mf
+
+ Ok [13] [18] [21] [22] [23] [24] [25] [26] [28] [31] [32] [36] [39] [44]
+
+[45] [46] [42] [47] [60] [61] [62] [77] [79] [87] [110] [91] [93] [94] [95]
+
+[96] [126] [127] [128] [129] [130] [131] [132] [133] [134] [135] [136] [137]
+
+[138] [139] [140] [141] [142] [143] [144] [145] [146] [147] [148] [149]
+
+[150] [151] [152] [153] [154] [155] [156] [157] [158] [159] [160] [161]
+
+[162] [163] [164] [165] [166] [167] [168] [169] [171] [172] [173] [174]
+
+[175] [177] [176] [180] [181] [182] [183] [184] [187] [191] [214] [246])
+
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\fonts/source/jknappen/ec\txromod.
+
+mf
+
+ Ok [48] [49] [50] [51] [52] [53] [54] [55] [56] [57])
+
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\fonts/source/jknappen/ec\txrsuper
+
+.mf
+
+ Ok [185] [178] [179] [170] [186])
+
+(C:\Users\flore\AppData\Local\Programs\MiKTeX\fonts/source/jknappen/ec\txrfract
+
+.mf
+
+ Ok [188] [189] [190]) ) ) )
+
+(some charht values had to be adjusted by as much as 0.06952pt)
+
+Font metrics written on tcrm1095.tfm.
+
+Output written on tcrm1095.600gf (128 characters, 25592 bytes).
+
+Transcript written on tcrm1095.log.
+
+Running miktex-gftopk.exe...
+This is GFtoPK, Version 2.4 (MiKTeX 25.12)
+
+'METAFONT output 2026.04.10:2234'
+
+25592 bytes packed to 12668 bytes.
+
+Installing C:\Users\flore\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1095.pk...
+
+
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+
+Package rerunfilecheck Warning: File `paper_draft.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+ )
+(see the transcript file for additional information) <C:\Users\flore\AppData\Lo
+cal\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1095.pk><C:/Users/flore/AppDa
+ta/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/fl
+ore/AppData/Local/Programs/MiKTeX/fonts/type1/urw/courier/ucrr8a.pfb><C:/Users/
+flore/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvb8a.pfb><C:/Use
+rs/flore/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Use
+rs/flore/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Use
+rs/flore/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmri8a.pfb>
+Output written on paper_draft.pdf (12 pages, 142909 bytes).
+Transcript written on paper_draft.log.

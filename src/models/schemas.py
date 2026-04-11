@@ -36,24 +36,7 @@ class CausalTripleSchema(BaseModel):
     
     direction: Literal["positive", "negative", "ambiguous"] = Field(
         ...,
-        description="Relationship direction: 'positive' if cause and effect move together, 'negative' if opposite, 'ambiguous' if unclear"
-    )
-    
-    strength: Literal["strong", "moderate", "weak"] = Field(
-        default="moderate",
-        description="Causal strength: 'strong' for explicit direct causality, 'moderate' for clear but hedged, 'weak' for heavily hedged"
-    )
-    
-    type: Literal[
-        "monetary_policy",
-        "real_economy", 
-        "inflation",
-        "financial_conditions",
-        "external",
-        "other"
-    ] = Field(
-        default="other",
-        description="Economic category based on the nature of the cause: monetary_policy (central bank actions), real_economy (output, demand, employment), inflation (prices, wages), financial_conditions (credit, rates, spreads), external (global factors, commodities), other"
+        description="Relationship direction: 'positive' if cause and effect move together, 'negative' if opposite, 'ambiguous' if other"
     )
 
 

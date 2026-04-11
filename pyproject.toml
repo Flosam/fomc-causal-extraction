@@ -1,7 +1,7 @@
 [project]
 name = "fomc-causal-extraction"
 version = "0.1.0"
-description = "LLM-based causal triple extraction from FOMC meeting minutes (CPSC 532 Final Project)"
+description = "LLM-based causal triple extraction from FOMC meeting minutes"
 requires-python = ">=3.11"
 dependencies = [
     "pandas",
@@ -17,6 +17,7 @@ dependencies = [
     "datasets",
     "tqdm",
     "scikit-learn",
+    "networkx",
 ]
 
 [dependency-groups]
