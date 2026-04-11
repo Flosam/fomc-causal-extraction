@@ -15,16 +15,16 @@ This project evaluates how reliably a large language model can extract **causal 
 ## Key Result Visuals
 
 ### Faithfulness drops as linguistic complexity increases
-![Faithfulness by Complexity](outputs/figures/fig_faithfulness_by_complexity.png)
+![Faithfulness by Complexity](docs/readme_assets/fig_faithfulness_by_complexity.png)
 
 ### Faithfulness is stable across economic periods
-![Faithfulness by Period](outputs/figures/fig_faithfulness_by_period.png)
+![Faithfulness by Period](docs/readme_assets/fig_faithfulness_by_period.png)
 
 ### Failure modes by complexity
-![Failure Modes by Complexity](outputs/figures/fig_human_failure_modes_by_complexity.png)
+![Failure Modes by Complexity](docs/readme_assets/fig_human_failure_modes_by_complexity.png)
 
 ### Example causal knowledge graph (Post-COVID)
-![Knowledge Graph Post-COVID](outputs/figures/kg_post_covid.png)
+![Knowledge Graph Post-COVID](docs/readme_assets/kg_post_covid.png)
 
 ## Why This Matters
 
